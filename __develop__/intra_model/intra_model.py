@@ -32,76 +32,12 @@ else:
     lib_path = dirname(__file__) + '/../../lib'
 sys.path.insert(1, lib_path)
 from gff3_modified import Gff3
+import function4gff
 
 __version__ = '0.0.1'
 
 def test():
     print('Hello World.')
-
-def FIX_MISSING_ATTR(gff): 
-    features = [line for line in gff.lines if line['line_type']=='feature']
-    flag = 0
-    for f in features:
-        if not f['attributes'].has_key('owner'):
-            f['attributes']['owner'] = 'Unassigned'
-        if not f['attributes'].has_key('ID'):
-            IDrequired = ['gene', 'pseudogene', 'mRNA', 'pseudogenic_transcript', 'exon', 'pseudogenic_exon']
-            if f['type'] in IDrequired:
-                logger_stderr.error('[Missing ID] A model needs to have a unique ID, but not. Please fix it first.\n{0:s}'.format(f['line_raw']))
-                flag += 1
-            else:
-                if len(f['parents'])== 1 and len(f['parents'][0]) == 1:
-                    tid = f['parents'][0][0]['attributes']['ID'] + '-' + f['type']
-                    f['attributes']['ID'] = tid
-                else:
-                    logger_stderr.error('[Missing ID] The program try to automatically generate ID for this model, but failed becuase this model has multiple parent features.\n{0:s}'.format(f['line_raw']))
-    if flag != 0:
-        sys.exit()
-
-def featureSort(linelist, reverse=False):
-    ''' Used by replace_OGS.py'''
-    FEATURECODE = {
-        'gene': 0, 
-        'pseudogene': 0, 
-        'mRNA': 1,
-        'rRNA': 1,
-        'tRNA': 1,
-        'miRNA': 1,
-        'snRNA': 1,
-        'pseudogenic_transcript': 1,
-        'transcript': 1,
-        'exon': 2,
-        'pseudogenic_exon': 2,
-        'CDS': 3,
-    }
-
-    id2line = {}
-    id2index = {}
-    seq2id = {}
-    for line in linelist:
-        lineindex = line['start'] if reverse==False else line['end']
-        id2line[str(line['line_raw'])] = line
-        if FEATURECODE.has_key(line['type']):
-            id2index[str(line['line_raw'])] = [lineindex, FEATURECODE[line['type']] if reverse==False else (-FEATURECODE[line['type']])]
-        else:
-            id2index[str(line['line_raw'])] = [lineindex, 99 if reverse==False else -99]
-        tmp = re.search('(.+?)(\d+)',line['seqid'])
-        seqnum = tmp.groups()[1]
-        if seq2id.has_key(seqnum):
-            seq2id[seqnum].append(str(line['line_raw']))
-        else:
-            seq2id[seqnum] = [str(line['line_raw'])]
-    keys = sorted(seq2id, key=lambda i: int(i))
-    newlinelist=[]
-    for k in keys:
-        ids = seq2id[k]
-        d = {}
-        for ID in ids:
-            d[ID] = id2index[ID]
-        id_sorted = sorted(d, key=lambda i: (int(d[i][0]), int(d[i][1])), reverse=reverse)
-        for i in id_sorted:
-            newlinelist.append(id2line[i])
-    return newlinelist
 
 def pseudo_child_type(gff, rootline):
     eCode = 'Ema0005'
@@ -114,32 +50,39 @@ def pseudo_child_type(gff, rootline):
             if child['type'] == 'transcript' or child['type'] == 'pseudogenic_transcript':
                 pass
             else:
-                if not result.has_key(child['attributes']['ID']):
-                    result[child['attributes']['ID']]=[]
-                result[child['attributes']['ID']].append(eCode)
-                child['line_errors'].append(eCode)
+                flag += 1
+                if len(result):
+                    result['eLines'].append(child)
+                else:
+                    result['ID'] = rootline['attributes']['ID']
+                    result['eCode'] = eCode
+                    result['eLines'] = [child]
+        if flag != 0:
+            rootline['line_errors'].append(eCode)
     if len(result):
         return result
 
 
-def main(gff):
-    FIX_MISSING_ATTR(gff3)
+def main(gff, logger=None):
+    function4gff.FIX_MISSING_ATTR(gff3, logger=logger)
 
     ERROR_CODE = ['Ema0005']
     ERROR_TAG = ['unusual child features in the type of pseudogene found']
     ERROR_INFO = dict(zip(ERROR_CODE, ERROR_TAG))
 
     roots = [line for line in gff.lines if line['line_type']=='feature' and not line['attributes'].has_key('Parent')]
-    error_set=dict()
+    error_set=list()
     for root in roots:
         r = pseudo_child_type(gff, root)
         if not r == None:
-            error_set = dict(error_set.items() + r.items())
+            error_set.append(r)
 
-    for k,v in error_set.items():
-        for e in v:
-            print(k, e, ERROR_INFO[e])
-    
+    for e in error_set:
+        tag = '[{0:s}]'.format(ERROR_INFO[e['eCode']]) 
+        print(e['ID'], e['eCode'], tag)
+   
+    if len(error_set): 
+        return(error_set)
 
 
 if __name__ == '__main__':
@@ -186,4 +129,4 @@ if __name__ == '__main__':
         report_fh = open(args.output, 'wb')
     
     gff3 = Gff3(gff_file=args.gff, logger=logger_null)
-    main(gff3)
+    main(gff3, logger=logger_stderr)

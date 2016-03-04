@@ -32,29 +32,10 @@ else:
     lib_path = dirname(__file__) + '/../../lib'
 sys.path.insert(1, lib_path)
 from gff3_modified import Gff3
-import intra_model 
+import function4gff
 
 __version__ = '0.0.1'
 
-def FIX_MISSING_ATTR(gff): 
-    features = [line for line in gff.lines if line['line_type']=='feature']
-    flag = 0
-    for f in features:
-        if not f['attributes'].has_key('owner'):
-            f['attributes']['owner'] = 'Unassigned'
-        if not f['attributes'].has_key('ID'):
-            IDrequired = ['gene', 'pseudogene', 'mRNA', 'pseudogenic_transcript', 'exon', 'pseudogenic_exon']
-            if f['type'] in IDrequired:
-                logger_stderr.error('[Missing ID] A model needs to have a unique ID, but not. Please fix it first.\n{0:s}'.format(f['line_raw']))
-                flag += 1
-            else:
-                if len(f['parents'])== 1 and len(f['parents'][0]) == 1:
-                    tid = f['parents'][0][0]['attributes']['ID'] + '-' + f['type']
-                    f['attributes']['ID'] = tid
-                else:
-                    logger_stderr.error('[Missing ID] The program try to automatically generate ID for this model, but failed becuase this model has multiple parent features.\n{0:s}'.format(f['line_raw']))
-    if flag != 0:
-        sys.exit()
 
 def check_duplicate(gff, linelist):
     '''
@@ -84,8 +65,8 @@ def check_duplicate(gff, linelist):
             schildren = pair['source']['children']
             tchildren = pair['target']['children']
             if len(schildren) == len(tchildren):
-                sort_schildren = intra_model.featureSort(schildren, reverse=True if pair['source']['strand'] == '-' else False)
-                sort_tchildren = intra_model.featureSort(tchildren, reverse=True if pair['source']['strand'] == '-' else False)
+                sort_schildren = function4gff.featureSort(schildren, reverse=True if pair['source']['strand'] == '-' else False)
+                sort_tchildren = function4gff.featureSort(tchildren, reverse=True if pair['source']['strand'] == '-' else False)
                 for i in range(len(sort_schildren)):
                     s7 = '{0:s}\t{1:s}\t{2:s}\t{3:d}\t{4:d}\t{5:s}\t{6:s}'.format(sort_schildren[i]['seqid'], sort_schildren[i]['source'], sort_schildren[i]['type'], sort_schildren[i]['start'], sort_schildren[i]['end'], sort_schildren[i]['score'], sort_schildren[i]['strand'], sort_schildren[i]['phase'])
                     t7 = '{0:s}\t{1:s}\t{2:s}\t{3:d}\t{4:d}\t{5:s}\t{6:s}'.format(sort_tchildren[i]['seqid'], sort_tchildren[i]['source'], sort_tchildren[i]['type'], sort_tchildren[i]['start'], sort_tchildren[i]['end'], sort_tchildren[i]['score'], sort_tchildren[i]['strand'], sort_tchildren[i]['phase'])
@@ -108,8 +89,8 @@ def check_duplicate(gff, linelist):
         return result
 
 
-def main(gff):
-    FIX_MISSING_ATTR(gff3)
+def main(gff, logger=None):
+    function4gff.FIX_MISSING_ATTR(gff3, logger=logger)
 
     ERROR_CODE = ['Emn0001']
     ERROR_TAG = ['Duplicate transcripts found']
@@ -177,4 +158,4 @@ if __name__ == '__main__':
         report_fh = open(args.output, 'wb')
     
     gff3 = Gff3(gff_file=args.gff, logger=logger_null)
-    main(gff3)
+    main(gff3, logger=logger_stderr)

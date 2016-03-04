@@ -32,29 +32,11 @@ else:
     lib_path = dirname(__file__) + '/../../lib'
 sys.path.insert(1, lib_path)
 from gff3_modified import Gff3
+import function4gff
 
 __version__ = '0.0.1'
 
 
-def FIX_MISSING_ATTR(gff, logger_stderr=None): 
-    features = [line for line in gff.lines if line['line_type']=='feature']
-    flag = 0
-    for f in features:
-        if not f['attributes'].has_key('owner'):
-            f['attributes']['owner'] = 'Unassigned'
-        if not f['attributes'].has_key('ID'):
-            IDrequired = ['gene', 'pseudogene', 'mRNA', 'pseudogenic_transcript', 'exon', 'pseudogenic_exon']
-            if f['type'] in IDrequired:
-                logger_stderr.error('[Missing ID] A model needs to have a unique ID, but not. Please fix it first.\n{0:s}'.format(f['line_raw']))
-                flag += 1
-            else:
-                if len(f['parents'])== 1 and len(f['parents'][0]) == 1:
-                    tid = f['parents'][0][0]['attributes']['ID'] + '-' + f['type']
-                    f['attributes']['ID'] = tid
-                else:
-                    logger_stderr.error('[Missing ID] The program try to automatically generate ID for this model, but failed becuase this model has multiple parent features.\n{0:s}'.format(f['line_raw']))
-    if flag != 0:
-        sys.exit()
 
 def FIX_PSEUDOGENE(gff):
     roots = [line for line in gff.lines if line['line_type']=='feature' and not line['attributes'].has_key('Parent')]
@@ -85,14 +67,10 @@ def detect_pseudogene(gff, line):
         if re.search(r"[Pp][Ss][EUeu][EUeu][Dd][Oo][Gg][Ee][Nn]*", str(v)):
             flag += 1
     if flag and not re.search(r"pseudogen*", line['type']):
-        children=[line]
-        if not line['attributes'].has_key('Parent'):
-           children = line['children'] 
-        for child in children:
-            if not result.has_key(child['attributes']['ID']):
-                result[child['attributes']['ID']]=[]
-            result[child['attributes']['ID']].append(eCode)
-            child['line_errors'].append(eCode)
+        result['ID'] = line['attributes']['ID']
+        result['eCode'] = eCode
+        result['eLines'] = [line]
+        line['line_errors'].append(eCode)
     if len(result):
         return result
 
@@ -100,57 +78,38 @@ def detect_negative_zero_coordinate(gff, line):
     eCode = 'Esf0002'
     result=dict()
     if line['start'] <= 0 or line['end'] <= 0:
-        if not result.has_key(line['attributes']['ID']):
-            result[line['attributes']['ID']]=[]
-        result[line['attributes']['ID']].append(eCode)
+        result['ID'] = line['attributes']['ID']
+        result['eCode'] = eCode
+        result['eLines'] = [line]
         line['line_errors'].append(eCode)
     if len(result):
         return result
 
 
-def main(gff, logger_stderr=None):
-    FIX_MISSING_ATTR(gff3, logger_stderr=logger_stderr)
+def main(gff, logger=None):
+    function4gff.FIX_MISSING_ATTR(gff3, logger=logger)
     FIX_PSEUDOGENE(gff3)
 
     ERROR_CODE = ['Esf0001', 'Esf0002']
-    ERROR_TAG = ['pseudogene or not?', 'Negative start/end coordinate']
+    ERROR_TAG = ['pseudogene or not?', 'Negative/Zero start/end coordinate']
     ERROR_INFO = dict(zip(ERROR_CODE, ERROR_TAG))
 
-    roots = [line for line in gff.lines if line['line_type']=='feature' and not line['attributes'].has_key('Parent')]
-    error_set=dict()
-    for root in roots:
-        r = detect_pseudogene(gff, root)
+    features = [line for line in gff.lines if line['line_type']=='feature']
+    error_set=list()
+    for f in features:
+        r = detect_pseudogene(gff, f)
         if not r == None:
-            error_set = dict(error_set.items() + r.items())
-        r = detect_negative_zero_coordinate(gff, root)
+            error_set.append(r)
+        r = detect_negative_zero_coordinate(gff, f)
         if not r == None:
-            error_set = dict(error_set.items() + r.items())
+            error_set.append(r)
 
-        children = root['children']
-        for child in children:
-            r = detect_pseudogene(gff, child)
-            if not r == None:
-                error_set = dict(error_set.items() + r.items())
-            r = detect_negative_zero_coordinate(gff, child)
-            if not r == None:
-                error_set = dict(error_set.items() + r.items())
-
-            descendants = gff.collect_descendants(child)
-            dr=dict()
-            for d in descendants:
-                r = detect_negative_zero_coordinate(gff, d)
-                if not r == None:
-                    dr = dict(dr.items() + r.items())
-            if not dr == None:
-                for k,v in dr.items():
-                    dr[child['attributes']['ID']] = v
-                    del dr[k]
-                error_set = dict(error_set.items() + dr.items())
-
-    for k,v in error_set.items():
-        for e in v:
-            print(k, e, ERROR_INFO[e])
-    
+    for e in error_set:
+        tag = '[{0:s}]'.format(ERROR_INFO[e['eCode']]) 
+        print(e['ID'], e['eCode'], tag)
+   
+    if len(error_set): 
+        return(error_set)
 
 if __name__ == '__main__':
     logger_stderr = logging.getLogger(__name__+'stderr')
@@ -196,6 +155,6 @@ if __name__ == '__main__':
         report_fh = open(args.output, 'wb')
     
     gff3 = Gff3(gff_file=args.gff, logger=logger_null)
-    main(gff3, logger_stderr=logger_stderr)
+    main(gff3, logger=logger_stderr)
     if args.output:
         gff3.write(args.output)

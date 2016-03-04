@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Extract sequences from specific regions of genome based on gff file."""
 from __future__ import absolute_import
-from .intra_model import *
+from .function4gff import *
 
 VERSION = (0, 0, 1)
 __version__ = '.'.join(map(str, VERSION[0:3])) + ''.join(VERSION[3:])
