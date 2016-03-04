@@ -46,7 +46,7 @@ def check_duplicate(gff, linelist):
     Note: If there are additional transcript type in the input gfff, then you should go to intra_model.featureSort, and add the new transcript type to the dict of  FEATURECODE.
     '''
 
-    eCode = 'Emn0001'
+    eCode = 'Emr0001'
     eSet = list()
 
     pairs = list()
@@ -82,8 +82,8 @@ def check_duplicate(gff, linelist):
             result['eCode'] = eCode
             result['eLines'] = [pair['source'], pair['target']]
             eSet.append(result)       
-            pair['source']['line_errors'].append(eCode)
-            pair['target']['line_errors'].append(eCode)
+            gff.add_line_error(pair['source'], {'message': 'Duplicate transcripts found between {0:s} and {1:s}'.format(pair['source']['attributes']['ID'], pair['target']['attributes']['ID']), 'error_type': 'INTER_MODEL', 'eCode': eCode})
+            gff.add_line_error(pair['target'], {'message': 'Duplicate transcripts found between {0:s} and {1:s}'.format(pair['source']['attributes']['ID'], pair['target']['attributes']['ID']), 'error_type': 'INTER_MODEL', 'eCode': eCode})
 
     if len(eSet):
         return eSet

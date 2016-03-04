@@ -24,8 +24,11 @@ General script for running through different phases of the OGS pipeline.
     - Detection of GFF format errors (Error_code: Error_tag)
         + Esf0001: pseudogene or not?
         + Esf0002: Negative/Zero start/end coordinate
+        + Esf0018: Start is not less than or equal to end
+        + Esf0031: Empty attribute value
         + Ema0005: unusual child features in the type of pseudogene found
         + Emr0001: Duplicate transcripts found
+        + Emr0005: Duplicate ID
 
 ## lib/
 Completed tools would be shown as under a specific directory. Tools under development would be shown as a Symbolic link.

@@ -227,7 +227,7 @@ class Gff3(object):
                     self.add_line_error(line, {'message': 'This feature is not contained within the feature boundaries of parent: {0:s}: {1:s}'.format(
                         parent_feature[0]['attributes']['ID'],
                         ','.join(['({0:s}, {1:d}, {2:d})'.format(line['seqid'], line['start'], line['end']) for line in parent_feature])
-                    ), 'error_type': 'BOUNDS', 'location': 'parent_boundary'})
+                    ), 'error_type': 'BOUNDS', 'location': 'parent_boundary', 'eCode': 'Ema0003'})
 
     def check_phase(self):
         """
@@ -241,11 +241,11 @@ class Gff3(object):
             strand_set = list(set([line['strand'] for line in cds_list]))
             if len(strand_set) != 1:
                 for line in cds_list:
-                    self.add_line_error(line, {'message': 'Inconsistent CDS strand with parent: {0:s}'.format(k), 'error_type': 'STRAND'})
+                    self.add_line_error(line, {'message': 'Inconsistent CDS strand with parent: {0:s}'.format(k), 'error_type': 'STRAND', 'eCode': 'Ema0005'})
                 continue
             if len(cds_list) == 1:
                 if cds_list[0]['phase'] != 0:
-                    self.add_line_error(cds_list[0], {'message': 'Wrong phase {0:d}, should be {1:d}'.format(cds_list[0]['phase'], 0), 'error_type': 'PHASE'})
+                    self.add_line_error(cds_list[0], {'message': 'Wrong phase {0:d}, should be {1:d}'.format(cds_list[0]['phase'], 0), 'error_type': 'PHASE', 'eCode': 'Ema0006'})
                 continue
             strand = strand_set[0]
             if strand not in plus_minus:
@@ -259,7 +259,7 @@ class Gff3(object):
             phase = 0
             for line in sorted_cds_list:
                 if line['phase'] != phase:
-                    self.add_line_error(line, {'message': 'Wrong phase {0:d}, should be {1:d}'.format(line['phase'], phase), 'error_type': 'PHASE'})
+                    self.add_line_error(line, {'message': 'Wrong phase {0:d}, should be {1:d}'.format(line['phase'], phase), 'error_type': 'PHASE', 'eCode': 'Ema0006'})
                 phase = (3 - ((line['end'] - line['start'] + 1 - phase) % 3)) % 3
 
     def parse_fasta_external(self, fasta_file):
@@ -318,15 +318,15 @@ class Gff3(object):
                 if seqid not in valid_sequence_regions and seqid not in unresolved_seqid:
                     unresolved_seqid.add(seqid)
                     error_lines.add(line_data['line_index'])
-                    self.add_line_error(line_data, {'message': u'Seqid not found in any ##sequence-region: {0:s}'.format(
-                        seqid), 'error_type': 'BOUNDS', 'location': 'sequence_region'})
+                    self.add_line_error(line_data, {'message': 'Seqid not found in any ##sequence-region: {0:s}'.format(
+                        seqid), 'error_type': 'BOUNDS', 'location': 'sequence_region', 'eCode': 'Esf0004'})
                     continue
                 if line_data['start'] < valid_sequence_regions[seqid]['start']:
                     error_lines.add(line_data['line_index'])
-                    self.add_line_error(line_data, {'message': 'Start is less than the ##sequence-region start: %d' % valid_sequence_regions[seqid]['start'], 'error_type': 'BOUNDS', 'location': 'sequence_region'})
+                    self.add_line_error(line_data, {'message': 'Start is less than the ##sequence-region start: %d' % valid_sequence_regions[seqid]['start'], 'error_type': 'BOUNDS', 'location': 'sequence_region', 'eCode': 'Esf0005'})
                 if line_data['end'] > valid_sequence_regions[seqid]['end']:
                     error_lines.add(line_data['line_index'])
-                    self.add_line_error(line_data, {'message': 'End is greater than the ##sequence-region end: %d' % valid_sequence_regions[seqid]['end'], 'error_type': 'BOUNDS', 'location': 'sequence_region'})
+                    self.add_line_error(line_data, {'message': 'End is greater than the ##sequence-region end: %d' % valid_sequence_regions[seqid]['end'], 'error_type': 'BOUNDS', 'location': 'sequence_region', 'eCode': 'Esf0006'})
         elif sequence_region:
             self.logger.debug('##sequence-region not found in GFF3')
         # check fasta_embedded
@@ -337,12 +337,12 @@ class Gff3(object):
                 if seqid not in self.fasta_embedded and seqid not in unresolved_seqid:
                     unresolved_seqid.add(seqid)
                     error_lines.add(line_data['line_index'])
-                    self.add_line_error(line_data, {'message': 'Seqid not found in the embedded ##FASTA: %s' % seqid, 'error_type': 'BOUNDS', 'location': 'fasta_embedded'})
+                    self.add_line_error(line_data, {'message': 'Seqid not found in the embedded ##FASTA: %s' % seqid, 'error_type': 'BOUNDS', 'location': 'fasta_embedded', 'eCode': 'Esf0007'})
                     continue
                 # check bounds
                 if line_data['end'] > len(self.fasta_embedded[seqid]['seq']):
                     error_lines.add(line_data['line_index'])
-                    self.add_line_error(line_data, {'message': 'End is greater than the embedded ##FASTA sequence length: %d' % len(self.fasta_embedded[seqid]['seq']), 'error_type': 'BOUNDS', 'location': 'fasta_embedded'})
+                    self.add_line_error(line_data, {'message': 'End is greater than the embedded ##FASTA sequence length: %d' % len(self.fasta_embedded[seqid]['seq']), 'error_type': 'BOUNDS', 'location': 'fasta_embedded', 'eCode': 'Esf0008'})
                 # check n
                 if check_n and line_data['type'] in check_n_feature_types:
                     """
@@ -359,7 +359,7 @@ class Gff3(object):
                         n_segments = [(m.start(), m.end() - m.start()) for m in n_segments_finditer(self.fasta_embedded[seqid]['seq'], line_data['start'] - 1, line_data['end'])]
                         n_segments_str = ['(%d, %d)' % (m[0], m[1]) for m in n_segments]
                         error_lines.add(line_data['line_index'])
-                        self.add_line_error(line_data, {'message': 'Found %d Ns in %s feature of length %d using the embedded ##FASTA, consists of %d segment (start, length): %s' % (n_count, line_data['type'], line_data['end'] - line_data['start'], len(n_segments), ', '.join(n_segments_str)), 'error_type': 'N_COUNT', 'n_segments': n_segments, 'location': 'fasta_embedded'})
+                        self.add_line_error(line_data, {'message': 'Found %d Ns in %s feature of length %d using the embedded ##FASTA, consists of %d segment (start, length): %s' % (n_count, line_data['type'], line_data['end'] - line_data['start'], len(n_segments), ', '.join(n_segments_str)), 'error_type': 'N_COUNT', 'n_segments': n_segments, 'location': 'fasta_embedded', 'eCode': 'Esf0009'})
         elif fasta_embedded:
             self.logger.debug('Embedded ##FASTA not found in GFF3')
         # check fasta_external
@@ -370,12 +370,12 @@ class Gff3(object):
                 if seqid not in self.fasta_external and seqid not in unresolved_seqid:
                     unresolved_seqid.add(seqid)
                     error_lines.add(line_data['line_index'])
-                    self.add_line_error(line_data, {'message': 'Seqid not found in the external FASTA file: %s' % seqid, 'error_type': 'BOUNDS', 'location': 'fasta_external'})
+                    self.add_line_error(line_data, {'message': 'Seqid not found in the external FASTA file: %s' % seqid, 'error_type': 'BOUNDS', 'location': 'fasta_external', 'eCode': 'Esf0010'})
                     continue
                 # check bounds
                 if line_data['end'] > len(self.fasta_external[seqid]['seq']):
                     error_lines.add(line_data['line_index'])
-                    self.add_line_error(line_data, {'message': 'End is greater than the external FASTA sequence length: %d' % len(self.fasta_external[seqid]['seq']), 'error_type': 'BOUNDS', 'location': 'fasta_external'})
+                    self.add_line_error(line_data, {'message': 'End is greater than the external FASTA sequence length: %d' % len(self.fasta_external[seqid]['seq']), 'error_type': 'BOUNDS', 'location': 'fasta_external', 'eCode': 'Esf0011'})
                 # check n
                 if check_n and line_data['type'] in check_n_feature_types:
                     n_count = self.fasta_external[seqid]['seq'].count('N', line_data['start'] - 1, line_data['end']) + self.fasta_external[seqid]['seq'].count('n', line_data['start'] - 1, line_data['end'])
@@ -384,7 +384,7 @@ class Gff3(object):
                         n_segments = [(m.start(), m.end() - m.start()) for m in n_segments_finditer(self.fasta_external[seqid]['seq'], line_data['start'] - 1, line_data['end'])]
                         n_segments_str = ['(%d, %d)' % (m[0], m[1]) for m in n_segments]
                         error_lines.add(line_data['line_index'])
-                        self.add_line_error(line_data, {'message': 'Found %d Ns in %s feature of length %d using the external FASTA, consists of %d segment (start, length): %s' % (n_count, line_data['type'], line_data['end'] - line_data['start'], len(n_segments), ', '.join(n_segments_str)), 'error_type': 'N_COUNT', 'n_segments': n_segments, 'location': 'fasta_external'})
+                        self.add_line_error(line_data, {'message': 'Found %d Ns in %s feature of length %d using the external FASTA, consists of %d segment (start, length): %s' % (n_count, line_data['type'], line_data['end'] - line_data['start'], len(n_segments), ', '.join(n_segments_str)), 'error_type': 'N_COUNT', 'n_segments': n_segments, 'location': 'fasta_external', 'eCode': 'Esf0012'})
         elif fasta_external:
             self.logger.debug('External FASTA file not given')
         if check_all_sources and not checked_at_least_one_source:
@@ -488,9 +488,9 @@ class Gff3(object):
             }
             line_strip = line_raw.strip()
             if line_strip != line_raw[:len(line_strip)]:
-                self.add_line_error(line_data, {'message': 'White chars not allowed at the start of a line', 'error_type': 'FORMAT', 'location': ''})
+                self.add_line_error(line_data, {'message': 'White chars not allowed at the start of a line', 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0013'})
             if current_line_num == 1 and not line_strip.startswith('##gff-version'):
-                self.add_line_error(line_data, {'message': '"##gff-version" missing from the first line', 'error_type': 'FORMAT', 'location': ''})
+                self.add_line_error(line_data, {'message': '"##gff-version" missing from the first line', 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0014'})
             if len(line_strip) == 0:
                 line_data['line_type'] = 'blank'
                 continue
@@ -504,33 +504,33 @@ class Gff3(object):
                     line_data['directive'] = '##sequence-region'
                     tokens = line_strip.split()[1:]
                     if len(tokens) != 3:
-                        self.add_line_error(line_data, {'message': 'Expecting 3 fields, got %d: %s' % (len(tokens) - 1, repr(tokens[1:])), 'error_type': 'FORMAT', 'location': ''})
+                        self.add_line_error(line_data, {'message': 'Expecting 3 fields, got %d: %s' % (len(tokens) - 1, repr(tokens[1:])), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0015'})
                     if len(tokens) > 0:
                         line_data['seqid'] = tokens[0]
                         # check for duplicate ##sequence-region seqid
                         if [True for d in lines if ('directive' in d and d['directive'] == '##sequence-region' and 'seqid' in d and d['seqid'] == line_data['seqid'])]:
-                            self.add_line_error(line_data, {'message': '##sequence-region seqid: "%s" may only appear once' % line_data['seqid'], 'error_type': 'FORMAT', 'location': ''})
+                            self.add_line_error(line_data, {'message': '##sequence-region seqid: "%s" may only appear once' % line_data['seqid'], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0016'})
                         try:
                             all_good = True
                             try:
                                 line_data['start'] = int(tokens[1])
                                 if line_data['start'] < 1:
-                                    self.add_line_error(line_data, {'message': 'Start is not a valid 1-based integer coordinate: "%s"' % tokens[1], 'error_type': 'FORMAT', 'location': ''})
+                                    self.add_line_error(line_data, {'message': 'Start is not a valid 1-based integer coordinate: "%s"' % tokens[1], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0002'})
                             except ValueError:
                                 all_good = False
-                                self.add_line_error(line_data, {'message': 'Start is not a valid integer: "%s"' % tokens[1], 'error_type': 'FORMAT', 'location': ''})
+                                self.add_line_error(line_data, {'message': 'Start is not a valid integer: "%s"' % tokens[1], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0017'})
                                 line_data['start'] = tokens[1]
                             try:
                                 line_data['end'] = int(tokens[2])
                                 if line_data['end'] < 1:
-                                    self.add_line_error(line_data, {'message': 'End is not a valid 1-based integer coordinate: "%s"' % tokens[2], 'error_type': 'FORMAT', 'location': ''})
+                                    self.add_line_error(line_data, {'message': 'End is not a valid 1-based integer coordinate: "%s"' % tokens[2], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0002'})
                             except ValueError:
                                 all_good = False
-                                self.add_line_error(line_data, {'message': 'End is not a valid integer: "%s"' % tokens[2], 'error_type': 'FORMAT', 'location': ''})
+                                self.add_line_error(line_data, {'message': 'End is not a valid integer: "%s"' % tokens[2], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0017'})
                                 line_data['start'] = tokens[2]
                             # if all_good then both start and end are int, so we can check if start is not less than or equal to end
                             if all_good and line_data['start'] > line_data['end']:
-                                self.add_line_error(line_data, {'message': 'Start is not less than or equal to end', 'error_type': 'FORMAT', 'location': ''})
+                                self.add_line_error(line_data, {'message': 'Start is not less than or equal to end', 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0018'})
                         except IndexError:
                             pass
                 elif line_strip.startswith('##gff-version'):
@@ -538,17 +538,17 @@ class Gff3(object):
                     line_data['directive'] = '##gff-version'
                     # check if it appeared before
                     if [True for d in lines if ('directive' in d and d['directive'] == '##gff-version')]:
-                        self.add_line_error(line_data, {'message': '##gff-version missing from the first line', 'error_type': 'FORMAT', 'location': ''})
+                        self.add_line_error(line_data, {'message': '##gff-version missing from the first line', 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0014'})
                     tokens = line_strip.split()[1:]
                     if len(tokens) != 1:
-                        self.add_line_error(line_data, {'message': 'Expecting 1 field, got %d: %s' % (len(tokens) - 1, repr(tokens[1:])), 'error_type': 'FORMAT', 'location': ''})
+                        self.add_line_error(line_data, {'message': 'Expecting 1 field, got %d: %s' % (len(tokens) - 1, repr(tokens[1:])), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0015'})
                     if len(tokens) > 0:
                         try:
                             line_data['version'] = int(tokens[0])
                             if line_data['version'] != 3:
-                                self.add_line_error(line_data, {'message': 'Version is not "3": "%s"' % tokens[0], 'error_type': 'FORMAT', 'location': ''})
+                                self.add_line_error(line_data, {'message': 'Version is not "3": "%s"' % tokens[0], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0019'})
                         except ValueError:
-                            self.add_line_error(line_data, {'message': 'Version is not a valid integer: "%s"' % tokens[0], 'error_type': 'FORMAT', 'location': ''})
+                            self.add_line_error(line_data, {'message': 'Version is not a valid integer: "%s"' % tokens[0], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0020'})
                             line_data['version'] = tokens[0]
                 elif line_strip.startswith('###'):
                     # This directive (three # signs in a row) indicates that all forward references to feature IDs that have been seen to this point have been resolved.
@@ -566,7 +566,7 @@ class Gff3(object):
                     line_data['directive'] = '##feature-ontology'
                     tokens = line_strip.split()[1:]
                     if len(tokens) != 1:
-                        self.add_line_error(line_data, {'message': 'Expecting 1 field, got %d: %s' % (len(tokens) - 1, repr(tokens[1:])), 'error_type': 'FORMAT', 'location': ''})
+                        self.add_line_error(line_data, {'message': 'Expecting 1 field, got %d: %s' % (len(tokens) - 1, repr(tokens[1:])), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0015'})
                     if len(tokens) > 0:
                         line_data['URI'] = tokens[0]
                 elif line_strip.startswith('##attribute-ontology'):
@@ -575,7 +575,7 @@ class Gff3(object):
                     line_data['directive'] = '##attribute-ontology'
                     tokens = line_strip.split()[1:]
                     if len(tokens) != 1:
-                        self.add_line_error(line_data, {'message': 'Expecting 1 field, got %d: %s' % (len(tokens) - 1, repr(tokens[1:])), 'error_type': 'FORMAT', 'location': ''})
+                        self.add_line_error(line_data, {'message': 'Expecting 1 field, got %d: %s' % (len(tokens) - 1, repr(tokens[1:])), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0015'})
                     if len(tokens) > 0:
                         line_data['URI'] = tokens[0]
                 elif line_strip.startswith('##source-ontology'):
@@ -584,7 +584,7 @@ class Gff3(object):
                     line_data['directive'] = '##source-ontology'
                     tokens = line_strip.split()[1:]
                     if len(tokens) != 1:
-                        self.add_line_error(line_data, {'message': 'Expecting 1 field, got %d: %s' % (len(tokens) - 1, repr(tokens[1:])), 'error_type': 'FORMAT', 'location': ''})
+                        self.add_line_error(line_data, {'message': 'Expecting 1 field, got %d: %s' % (len(tokens) - 1, repr(tokens[1:])), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0015'})
                     if len(tokens) > 0:
                         line_data['URI'] = tokens[0]
                 elif line_strip.startswith('##species'):
@@ -593,7 +593,7 @@ class Gff3(object):
                     line_data['directive'] = '##species'
                     tokens = line_strip.split()[1:]
                     if len(tokens) != 1:
-                        self.add_line_error(line_data, {'message': 'Expecting 1 field, got %d: %s' % (len(tokens) - 1, repr(tokens[1:])), 'error_type': 'FORMAT', 'location': ''})
+                        self.add_line_error(line_data, {'message': 'Expecting 1 field, got %d: %s' % (len(tokens) - 1, repr(tokens[1:])), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0015'})
                     if len(tokens) > 0:
                         line_data['NCBI_Taxonomy_URI'] = tokens[0]
                 elif line_strip.startswith('##genome-build'):
@@ -602,7 +602,7 @@ class Gff3(object):
                     line_data['directive'] = '##genome-build'
                     tokens = line_strip.split()[1:]
                     if len(tokens) != 2:
-                        self.add_line_error(line_data, {'message': 'Expecting 2 fields, got %d: %s' % (len(tokens) - 1, repr(tokens[1:])), 'error_type': 'FORMAT', 'location': ''})
+                        self.add_line_error(line_data, {'message': 'Expecting 2 fields, got %d: %s' % (len(tokens) - 1, repr(tokens[1:])), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0015'})
                     if len(tokens) > 0:
                         line_data['source'] = tokens[0]
                         try:
@@ -610,7 +610,7 @@ class Gff3(object):
                         except IndexError:
                             pass
                 else:
-                    self.add_line_error(line_data, {'message': 'Unknown directive', 'error_type': 'FORMAT', 'location': ''})
+                    self.add_line_error(line_data, {'message': 'Unknown directive', 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0021'})
                     tokens = line_strip.split()
                     line_data['directive'] = tokens[0]
             elif line_strip.startswith('#'):
@@ -620,67 +620,67 @@ class Gff3(object):
                 line_data['line_type'] = 'feature'
                 tokens = map(str.strip, line_raw.split('\t'))
                 if len(tokens) != 9:
-                    self.add_line_error(line_data, {'message': 'Features should contain 9 fields, got %d: %s' % (len(tokens) - 1, repr(tokens[1:])), 'error_type': 'FORMAT', 'location': ''})
+                    self.add_line_error(line_data, {'message': 'Features should contain 9 fields, got %d: %s' % (len(tokens) - 1, repr(tokens[1:])), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0022'})
                 for i, t in enumerate(tokens):
                     if not t:
-                        self.add_line_error(line_data, {'message': 'Empty field: %d, must have a "."' % (i + 1), 'error_type': 'FORMAT', 'location': ''})
+                        self.add_line_error(line_data, {'message': 'Empty field: %d, must have a "."' % (i + 1), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0022'})
                 try:
                     line_data['seqid'] = tokens[0]
                     if unescaped_seqid(tokens[0]):
-                        self.add_line_error(line_data, {'message': 'Seqid must escape any characters not in the set [a-zA-Z0-9.:^*$@!+_?-|]: "%s"' % tokens[0], 'error_type': 'FORMAT', 'location': ''})
+                        self.add_line_error(line_data, {'message': 'Seqid must escape any characters not in the set [a-zA-Z0-9.:^*$@!+_?-|]: "%s"' % tokens[0], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0023'})
                     line_data['source'] = tokens[1]
                     if unescaped_field(tokens[1]):
-                        self.add_line_error(line_data, {'message': 'Source must escape the percent (%%) sign and any control characters: "%s"' % tokens[1], 'error_type': 'FORMAT', 'location': ''})
+                        self.add_line_error(line_data, {'message': 'Source must escape the percent (%%) sign and any control characters: "%s"' % tokens[1], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0023'})
                     line_data['type'] = tokens[2]
                     if unescaped_field(tokens[2]):
-                        self.add_line_error(line_data, {'message': 'Type must escape the percent (%%) sign and any control characters: "%s"' % tokens[2], 'error_type': 'FORMAT', 'location': ''})
+                        self.add_line_error(line_data, {'message': 'Type must escape the percent (%%) sign and any control characters: "%s"' % tokens[2], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0023'})
                     all_good = True
                     try:
                         line_data['start'] = int(tokens[3])
                         if line_data['start'] < 1:
-                            self.add_line_error(line_data, {'message': 'Start is not a valid 1-based integer coordinate: "%s"' % tokens[3], 'error_type': 'FORMAT', 'location': 'start'})
+                            self.add_line_error(line_data, {'message': 'Start is not a valid 1-based integer coordinate: "%s"' % tokens[3], 'error_type': 'FORMAT', 'location': 'start', 'eCode': 'Esf0002'})
                     except ValueError:
                         all_good = False
                         line_data['start'] = tokens[3]
                         if line_data['start'] != '.':
-                            self.add_line_error(line_data, {'message': 'Start is not a valid integer: "%s"' % line_data['start'], 'error_type': 'FORMAT', 'location': 'start'})
+                            self.add_line_error(line_data, {'message': 'Start is not a valid integer: "%s"' % line_data['start'], 'error_type': 'FORMAT', 'location': 'start', 'eCode': 'Esf0017'})
                     try:
                         line_data['end'] = int(tokens[4])
                         if line_data['end'] < 1:
-                            self.add_line_error(line_data, {'message': 'End is not a valid 1-based integer coordinate: "%s"' % tokens[4], 'error_type': 'FORMAT', 'location': 'end'})
+                            self.add_line_error(line_data, {'message': 'End is not a valid 1-based integer coordinate: "%s"' % tokens[4], 'error_type': 'FORMAT', 'location': 'end', 'eCode': 'Esf0002'})
                     except ValueError:
                         all_good = False
                         line_data['end'] = tokens[4]
                         if line_data['end'] != '.':
-                            self.add_line_error(line_data, {'message': 'End is not a valid integer: "%s"' % line_data['end'], 'error_type': 'FORMAT', 'location': 'end'})
+                            self.add_line_error(line_data, {'message': 'End is not a valid integer: "%s"' % line_data['end'], 'error_type': 'FORMAT', 'location': 'end', 'eCode': 'Esf0017'})
                     # if all_good then both start and end are int, so we can check if start is not less than or equal to end
                     if all_good and line_data['start'] > line_data['end']:
-                        self.add_line_error(line_data, {'message': 'Start is not less than or equal to end', 'error_type': 'FORMAT', 'location': 'start,end'})
+                        self.add_line_error(line_data, {'message': 'Start is not less than or equal to end', 'error_type': 'FORMAT', 'location': 'start,end', 'eCode': 'Esf0018'})
                     try:
                         line_data['score'] = float(tokens[5])
                     except ValueError:
                         line_data['score'] = tokens[5]
                         if line_data['score'] != '.':
-                            self.add_line_error(line_data, {'message': 'Score is not a valid floating point number: "%s"' % line_data['score'], 'error_type': 'FORMAT', 'location': ''})
+                            self.add_line_error(line_data, {'message': 'Score is not a valid floating point number: "%s"' % line_data['score'], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0024'})
                     line_data['strand'] = tokens[6]
                     if line_data['strand'] not in valid_strand: # set(['+', '-', '.', '?'])
-                        self.add_line_error(line_data, {'message': 'Strand has illegal characters: "%s"' % tokens[6], 'error_type': 'FORMAT', 'location': ''})
+                        self.add_line_error(line_data, {'message': 'Strand has illegal characters: "%s"' % tokens[6], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0025'})
                     try:
                         line_data['phase'] = int(tokens[7])
                         if line_data['phase'] not in valid_phase: # set([0, 1, 2])
-                            self.add_line_error(line_data, {'message': 'Phase is not 0, 1, or 2: "%s"' % tokens[7], 'error_type': 'FORMAT', 'location': ''})
+                            self.add_line_error(line_data, {'message': 'Phase is not 0, 1, or 2: "%s"' % tokens[7], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0026'})
                     except ValueError:
                         line_data['phase'] = tokens[7]
                         if line_data['phase'] != '.':
-                            self.add_line_error(line_data, {'message': 'Phase is not a valid integer: "%s"' % line_data['phase'], 'error_type': 'FORMAT', 'location': ''})
+                            self.add_line_error(line_data, {'message': 'Phase is not a valid integer: "%s"' % line_data['phase'], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0026'})
                         elif line_data['type'] == 'CDS':
-                            self.add_line_error(line_data, {'message': 'Phase is required for all CDS features', 'error_type': 'FORMAT', 'location': ''})
+                            self.add_line_error(line_data, {'message': 'Phase is required for all CDS features', 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0027'})
                     # parse attributes, ex: ID=exon00003;Parent=mRNA00001,mRNA00003;Name=EXON.1
                     # URL escaping rules are used for tags or values containing the following characters: ",=;". Spaces are allowed in this field, but tabs must be replaced with the %09 URL escape.
                     # Note that attribute names are case sensitive. "Parent" is not the same as "parent".
                     # All attributes that begin with an uppercase letter are reserved for later use. Attributes that begin with a lowercase letter can be used freely by applications.
                     if unescaped_field(tokens[8]):
-                        self.add_line_error(line_data, {'message': 'Attributes must escape the percent (%) sign and any control characters', 'error_type': 'FORMAT', 'location': ''})
+                        self.add_line_error(line_data, {'message': 'Attributes must escape the percent (%) sign and any control characters', 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0028'})
                     attribute_tokens = tuple(tuple(t for t in a.split('=')) for a in tokens[8].split(';') if a)
                     line_data['attributes'] = {}
                     if len(attribute_tokens) == 1 and len(attribute_tokens[0]) == 1 and attribute_tokens[0][0] == '.':
@@ -688,20 +688,20 @@ class Gff3(object):
                     else:
                         for a in attribute_tokens:
                             if len(a) != 2:
-                                self.add_line_error(line_data, {'message': 'Attributes must contain one and only one equal (=) sign: "%s"' % ('='.join(a)), 'error_type': 'FORMAT', 'location': ''})
+                                self.add_line_error(line_data, {'message': 'Attributes must contain one and only one equal (=) sign: "%s"' % ('='.join(a)), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0029'})
                             try:
                                 tag, value = a
                             except ValueError:
                                 tag, value = a[0], ''
                             if not tag:
-                                self.add_line_error(line_data, {'message': 'Empty attribute tag: "%s"' % '='.join(a), 'error_type': 'FORMAT', 'location': ''})
+                                self.add_line_error(line_data, {'message': 'Empty attribute tag: "%s"' % '='.join(a), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0030'})
                             if not value.strip():
-                                self.add_line_error(line_data, {'message': 'Empty attribute value: "%s"' % '='.join(a), 'error_type': 'FORMAT', 'location': ''}, log_level=logging.WARNING)
+                                self.add_line_error(line_data, {'message': 'Empty attribute value: "%s"' % '='.join(a), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0031'}, log_level=logging.WARNING)
                             if tag in line_data['attributes']:
-                                self.add_line_error(line_data, {'message': 'Found multiple attribute tags: "%s"' % tag, 'error_type': 'FORMAT', 'location': ''})
+                                self.add_line_error(line_data, {'message': 'Found multiple attribute tags: "%s"' % tag, 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0032'})
                             if tag in multi_value_attributes: # set(['replace', 'Parent', 'Alias', 'Note', 'Dbxref', 'Ontology_term']) # add 'replace on 05182015' by Mei-Ju May Chen
                                 if value.find(', ') >= 0:
-                                    self.add_line_error(line_data, {'message': 'Found ", " in %s attribute, possible unescaped ",": "%s"' % (tag, value), 'error_type': 'FORMAT', 'location': ''}, log_level=logging.WARNING)
+                                    self.add_line_error(line_data, {'message': 'Found ", " in %s attribute, possible unescaped ",": "%s"' % (tag, value), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0033'}, log_level=logging.WARNING)
                                 # In addition to Parent, the Alias, Note, Dbxref and Ontology_term attributes can have multiple values.
                                 if tag in line_data['attributes']: # if this tag has been seen before
                                     if tag == 'Note': # don't check for duplicate notes
@@ -713,7 +713,7 @@ class Gff3(object):
                                 # check for duplicate values
                                 if tag != 'Note' and len(line_data['attributes'][tag]) != len(set(line_data['attributes'][tag])):
                                     count_values = [(len(list(group)), key) for key, group in groupby(sorted(line_data['attributes'][tag]))]
-                                    self.add_line_error(line_data, {'message': '%s attribute has identical values (count, value): %s' % (tag, ', '.join(['(%d, %s)' % (c, v) for c, v in count_values if c > 1])), 'error_type': 'FORMAT', 'location': ''})
+                                    self.add_line_error(line_data, {'message': '%s attribute has identical values (count, value): %s' % (tag, ', '.join(['(%d, %s)' % (c, v) for c, v in count_values if c > 1])), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0034'})
                                     # remove duplicate
                                     line_data['attributes'][tag] = list(set(line_data['attributes'][tag]))
 
@@ -725,14 +725,14 @@ class Gff3(object):
                                                 # no need to check if line_data in ld['children'], because it is impossible, each ld maps to only one feature_id, so the ld we get are all different
                                                 ld['children'].append(line_data)
                                         except KeyError: # features[id]
-                                            self.add_line_error(line_data, {'message': '%s attribute has unresolved forward reference: %s' % (tag, feature_id), 'error_type': 'FORMAT', 'location': ''})
+                                            self.add_line_error(line_data, {'message': '%s attribute has unresolved forward reference: %s' % (tag, feature_id), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0035'})
                                             unresolved_parents[feature_id].append(line_data)
                             elif tag == 'Target':
                                 if value.find(',') >= 0:
-                                    self.add_line_error(line_data, {'message': 'Value of %s attribute contains unescaped ",": "%s"' % (tag, value), 'error_type': 'FORMAT', 'location': ''})
+                                    self.add_line_error(line_data, {'message': 'Value of %s attribute contains unescaped ",": "%s"' % (tag, value), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0036'})
                                 target_tokens = value.split(' ')
                                 if len(target_tokens) < 3 or len(target_tokens) > 4:
-                                    self.add_line_error(line_data, {'message': 'Target attribute should have 3 or 4 values, got %d: %s' % (len(target_tokens), repr(tokens)), 'error_type': 'FORMAT', 'location': ''})
+                                    self.add_line_error(line_data, {'message': 'Target attribute should have 3 or 4 values, got %d: %s' % (len(target_tokens), repr(tokens)), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0037'})
                                 line_data['attributes'][tag] = {}
                                 try:
                                     line_data['attributes'][tag]['target_id'] = target_tokens[0]
@@ -740,39 +740,39 @@ class Gff3(object):
                                     try:
                                         line_data['attributes'][tag]['start'] = int(target_tokens[1])
                                         if line_data['attributes'][tag]['start'] < 1:
-                                            self.add_line_error(line_data, {'message': 'Start value of Target attribute is not a valid 1-based integer coordinate: "%s"' % target_tokens[1], 'error_type': 'FORMAT', 'location': ''})
+                                            self.add_line_error(line_data, {'message': 'Start value of Target attribute is not a valid 1-based integer coordinate: "%s"' % target_tokens[1], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0038'})
                                     except ValueError:
                                         all_good = False
                                         line_data['attributes'][tag]['start'] = target_tokens[1]
-                                        self.add_line_error(line_data, {'message': 'Start value of Target attribute is not a valid integer: "%s"' % line_data['attributes'][tag]['start'], 'error_type': 'FORMAT', 'location': ''})
+                                        self.add_line_error(line_data, {'message': 'Start value of Target attribute is not a valid integer: "%s"' % line_data['attributes'][tag]['start'], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0038'})
                                     try:
                                         line_data['attributes'][tag]['end'] = int(target_tokens[2])
                                         if line_data['attributes'][tag]['end'] < 1:
-                                            self.add_line_error(line_data, {'message': 'End value of Target attribute is not a valid 1-based integer coordinate: "%s"' % target_tokens[2], 'error_type': 'FORMAT', 'location': ''})
+                                            self.add_line_error(line_data, {'message': 'End value of Target attribute is not a valid 1-based integer coordinate: "%s"' % target_tokens[2], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0038'})
                                     except ValueError:
                                         all_good = False
                                         line_data['attributes'][tag]['end'] = target_tokens[2]
-                                        self.add_line_error(line_data, {'message': 'End value of Target attribute is not a valid integer: "%s"' % line_data['attributes'][tag]['end'], 'error_type': 'FORMAT', 'location': ''})
+                                        self.add_line_error(line_data, {'message': 'End value of Target attribute is not a valid integer: "%s"' % line_data['attributes'][tag]['end'], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0038'})
                                     # if all_good then both start and end are int, so we can check if start is not less than or equal to end
                                     if all_good and line_data['attributes'][tag]['start'] > line_data['attributes'][tag]['end']:
-                                        self.add_line_error(line_data, {'message': 'Start is not less than or equal to end', 'error_type': 'FORMAT', 'location': ''})
+                                        self.add_line_error(line_data, {'message': 'Start is not less than or equal to end', 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0018'})
                                     line_data['attributes'][tag]['strand'] = target_tokens[3]
                                     if line_data['attributes'][tag]['strand'] not in valid_attribute_target_strand: # set(['+', '-', ''])
-                                        self.add_line_error(line_data, {'message': 'Strand value of Target attribute has illegal characters: "%s"' % line_data['attributes'][tag]['strand'], 'error_type': 'FORMAT', 'location': ''})
+                                        self.add_line_error(line_data, {'message': 'Strand value of Target attribute has illegal characters: "%s"' % line_data['attributes'][tag]['strand'], 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0039'})
                                 except IndexError:
                                     pass
                             else:
                                 if value.find(',') >= 0:
-                                    self.add_line_error(line_data, {'message': 'Value of %s attribute contains unescaped ",": "%s"' % (tag, value), 'error_type': 'FORMAT', 'location': ''})
+                                    self.add_line_error(line_data, {'message': 'Value of %s attribute contains unescaped ",": "%s"' % (tag, value), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0036'})
                                 line_data['attributes'][tag] = value
                                 if tag == 'Is_circular' and value != 'true':
-                                    self.add_line_error(line_data, {'message': 'Value of Is_circular attribute is not "true": "%s"' % value, 'error_type': 'FORMAT', 'location': ''})
+                                    self.add_line_error(line_data, {'message': 'Value of Is_circular attribute is not "true": "%s"' % value, 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0040'})
                                 elif tag[:1].isupper() and tag not in reserved_attributes: # {'replace','ID', 'Name', 'Alias', 'Parent', 'Target', 'Gap', 'Derives_from', 'Note', 'Dbxref', 'Ontology_term', 'Is_circular'} # add 'replace' on 05182015 by Mei-Ju May Chen
-                                    self.add_line_error(line_data, {'message': 'Unknown reserved (uppercase) attribute: "%s"' % tag, 'error_type': 'FORMAT', 'location': ''})
+                                    self.add_line_error(line_data, {'message': 'Unknown reserved (uppercase) attribute: "%s"' % tag, 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0041'})
                                 elif tag == 'ID':
                                     # check for duplicate ID in non-adjacent lines
                                     if value in features and lines[-1]['attributes'][tag] != value:
-                                        self.add_line_error(line_data, {'message': 'Duplicate ID: "%s" in non-adjacent lines: %s' % (value, ','.join([str(f['line_index'] + 1) for f in features[value]])), 'error_type': 'FORMAT', 'location': ''}, log_level=logging.WARNING)
+                                        self.add_line_error(line_data, {'message': 'Duplicate ID: "%s" in non-adjacent lines: %s' % (value, ','.join([str(f['line_index'] + 1) for f in features[value]])), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Emr0005'}, log_level=logging.WARNING)
                                     features[value].append(line_data)
                 except IndexError:
                     pass
@@ -786,7 +786,7 @@ class Gff3(object):
         for feature_id in unresolved_parents:
             if feature_id in features:
                 for line in unresolved_parents[feature_id]:
-                    self.add_line_error(line, {'message': 'Unresolved forward reference: "%s", found defined in lines: %s' % (feature_id, ','.join([str(ld['line_index'] + 1) for ld in features[feature_id]])), 'error_type': 'FORMAT', 'location': ''})
+                    self.add_line_error(line, {'message': 'Unresolved forward reference: "%s", found defined in lines: %s' % (feature_id, ','.join([str(ld['line_index'] + 1) for ld in features[feature_id]])), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0042'})
 
         self.lines = lines
         self.features = features

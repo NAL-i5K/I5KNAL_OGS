@@ -101,4 +101,20 @@ def featureSort(linelist, reverse=False):
     return newlinelist
 
 
+def extract_internal_detected_errors(gff):
+    error_lines = [line for line in gff.lines if line['line_errors']]
+
+    eSet = list()
+    for line in error_lines:
+        for e in line['line_errors']:
+            result = dict()
+            result['ID'] = [line['attributes']['ID']]
+            result['eCode'] = e['eCode']
+            result['eLines'] = [line]
+            result['eTag'] = e['message']
+            print('{0:s}\t{1:s}\t[{2:s}]'.format(result['ID'], result['eCode'], result['eTag']))
+            eSet.append(result)
+
+    if len(eSet):
+        return eSet
 

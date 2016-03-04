@@ -54,7 +54,7 @@ def FIX_PSEUDOGENE(gff):
                     for other in others:
                         other['line_status'] = 'removed'
 
-def detect_pseudogene(gff, line):
+def check_pseudogene(gff, line):
     ''' 
     Note:
     1. This funtion should be only applied on a gff file that has been fixed by FIX_PSEUDOGENE function.
@@ -70,21 +70,20 @@ def detect_pseudogene(gff, line):
         result['ID'] = [line['attributes']['ID']]
         result['eCode'] = eCode
         result['eLines'] = [line]
-        line['line_errors'].append(eCode)
+        gff.add_line_error(line, {'message': 'pseudogene or not?', 'error_type': 'FEATURE_TYPE', 'eCode': eCode})
     if len(result):
         return [result]
 
-def detect_negative_zero_coordinate(gff, line):
+def check_negative_zero_coordinate(gff, line):
     eCode = 'Esf0002'
     result=dict()
     if line['start'] <= 0 or line['end'] <= 0:
         result['ID'] = [line['attributes']['ID']]
         result['eCode'] = eCode
         result['eLines'] = [line]
-        line['line_errors'].append(eCode)
+        gff.add_line_error(line, {'message': 'Negative/Zero start/end coordinate', 'error_type': 'FORMAT', 'eCode': eCode})
     if len(result):
         return [result]
-
 
 def main(gff, logger=None):
     function4gff.FIX_MISSING_ATTR(gff, logger=logger)
@@ -97,10 +96,10 @@ def main(gff, logger=None):
     features = [line for line in gff.lines if line['line_type']=='feature']
     error_set=list()
     for f in features:
-        r = detect_pseudogene(gff, f)
+        r = check_pseudogene(gff, f)
         if not r == None:
             error_set.extend(r)
-        r = detect_negative_zero_coordinate(gff, f)
+        r = check_negative_zero_coordinate(gff, f)
         if not r == None:
             error_set.extend(r)
 

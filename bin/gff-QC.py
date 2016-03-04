@@ -96,6 +96,7 @@ if __name__ == '__main__':
 
     print 'Transcript_ID\tError_code\tError_tag'
     error_set = list()
+    error_set.extend(function4gff.extract_internal_detected_errors(gff3))
     error_set.extend(intra_model.main(gff3, logger=logger_stderr))
     error_set.extend(inter_model.main(gff3, logger=logger_stderr))
     error_set.extend(single_feature.main(gff3, logger=logger_stderr))
