@@ -60,11 +60,11 @@ def pseudo_child_type(gff, rootline):
         if flag != 0:
             rootline['line_errors'].append(eCode)
     if len(result):
-        return result
+        return [result]
 
 
 def main(gff, logger=None):
-    function4gff.FIX_MISSING_ATTR(gff3, logger=logger)
+    function4gff.FIX_MISSING_ATTR(gff, logger=logger)
 
     ERROR_CODE = ['Ema0005']
     ERROR_TAG = ['unusual child features in the type of pseudogene found']
@@ -75,7 +75,7 @@ def main(gff, logger=None):
     for root in roots:
         r = pseudo_child_type(gff, root)
         if not r == None:
-            error_set.append(r)
+            error_set.extend(r)
 
     for e in error_set:
         tag = '[{0:s}]'.format(ERROR_INFO[e['eCode']]) 

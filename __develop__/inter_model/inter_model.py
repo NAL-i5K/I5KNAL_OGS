@@ -47,7 +47,7 @@ def check_duplicate(gff, linelist):
     '''
 
     eCode = 'Emn0001'
-    result = dict()
+    eSet = list()
 
     pairs = list()
     for i in range(len(linelist)-1):
@@ -60,6 +60,7 @@ def check_duplicate(gff, linelist):
                     pairs.append({'source':source, 'target':target})
 
     for pair in pairs:
+        result = dict()
         same_target = False
         if pair['source'].has_key('children') and pair['target'].has_key('children'):
             schildren = pair['source']['children']
@@ -76,28 +77,27 @@ def check_duplicate(gff, linelist):
                         same_target=False
                         break
         if same_target:
-            tmp = [pair['source']['attributes']['ID'], pair['target']['attributes']['ID']]
-            sort_tmp = sorted(tmp)
-            key = '{0:s},{1:s}'.format(sort_tmp[0], sort_tmp[1])
-            if not result.has_key(key):
-                result[key] = []
-            result[key].append(eCode)
+            key = '{0:s},{1:s}'.format(pair['source']['attributes']['ID'], pair['target']['attributes']['ID'])
+            result['ID'] = key
+            result['eCode'] = eCode
+            result['eLines'] = [pair['source'], pair['target']]
+            eSet.append(result)       
             pair['source']['line_errors'].append(eCode)
             pair['target']['line_errors'].append(eCode)
-                   
-    if len(result):
-        return result
+
+    if len(eSet):
+        return eSet
 
 
 def main(gff, logger=None):
-    function4gff.FIX_MISSING_ATTR(gff3, logger=logger)
+    function4gff.FIX_MISSING_ATTR(gff, logger=logger)
 
     ERROR_CODE = ['Emn0001']
     ERROR_TAG = ['Duplicate transcripts found']
     ERROR_INFO = dict(zip(ERROR_CODE, ERROR_TAG))
 
     roots = [line for line in gff.lines if line['line_type']=='feature' and not line['attributes'].has_key('Parent')]
-    error_set=dict()
+    error_set=list()
     trans_list = list()
     for root in roots:
         children = root['children']
@@ -106,11 +106,15 @@ def main(gff, logger=None):
 
     r = check_duplicate(gff, trans_list)
     if not r == None:
-        error_set = dict(error_set.items() + r.items())
+        error_set.extend(r)
 
-    for k,v in error_set.items():
-        for e in v:
-            print (k, e, ERROR_INFO[e])
+    for e in error_set:
+        tag = '[{0:s}]'.format(ERROR_INFO[e['eCode']]) 
+        print(e['ID'], e['eCode'], tag)
+   
+    if len(error_set): 
+        return(error_set)
+
 
 
 

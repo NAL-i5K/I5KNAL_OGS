@@ -72,7 +72,7 @@ def detect_pseudogene(gff, line):
         result['eLines'] = [line]
         line['line_errors'].append(eCode)
     if len(result):
-        return result
+        return [result]
 
 def detect_negative_zero_coordinate(gff, line):
     eCode = 'Esf0002'
@@ -83,12 +83,12 @@ def detect_negative_zero_coordinate(gff, line):
         result['eLines'] = [line]
         line['line_errors'].append(eCode)
     if len(result):
-        return result
+        return [result]
 
 
 def main(gff, logger=None):
-    function4gff.FIX_MISSING_ATTR(gff3, logger=logger)
-    FIX_PSEUDOGENE(gff3)
+    function4gff.FIX_MISSING_ATTR(gff, logger=logger)
+    FIX_PSEUDOGENE(gff)
 
     ERROR_CODE = ['Esf0001', 'Esf0002']
     ERROR_TAG = ['pseudogene or not?', 'Negative/Zero start/end coordinate']
@@ -99,10 +99,10 @@ def main(gff, logger=None):
     for f in features:
         r = detect_pseudogene(gff, f)
         if not r == None:
-            error_set.append(r)
+            error_set.extend(r)
         r = detect_negative_zero_coordinate(gff, f)
         if not r == None:
-            error_set.append(r)
+            error_set.extend(r)
 
     for e in error_set:
         tag = '[{0:s}]'.format(ERROR_INFO[e['eCode']]) 

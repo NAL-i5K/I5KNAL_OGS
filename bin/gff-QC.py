@@ -17,6 +17,7 @@ else:
     lib_path = dirname(__file__) + '/../lib'
 sys.path.insert(1, lib_path)
 from gff3_modified import Gff3
+import function4gff
 import single_feature
 import inter_model
 import intra_model
@@ -92,8 +93,16 @@ if __name__ == '__main__':
     logger_stderr.info('Reading gff files: (%s)...\n', args.gff)
     gff3 = Gff3(gff_file=args.gff, logger=logger_null)
     logger_stderr.info('Checking missing attributes: (%s)...\n', 'single_feature.FIX_MISSING_ATTR()')
-    single_feature.FIX_MISSING_ATTR(gff3, logger_stderr=logger_stderr)
 
+    print 'Transcript_ID\tError_code\tError_tag'
+    error_set = list()
+    error_set.extend(intra_model.main(gff3, logger=logger_stderr))
+    error_set.extend(inter_model.main(gff3, logger=logger_stderr))
+    error_set.extend(single_feature.main(gff3, logger=logger_stderr))
+
+    
+
+    '''
     roots = [line for line in gff3.lines if line['line_type']=='feature' and not line['attributes'].has_key('Parent')]
     error_set=dict()
 
@@ -125,10 +134,9 @@ if __name__ == '__main__':
             r = single_feature.detect_pseudogene(gff3, child)
             if not r == None:
                 error_set = dict(error_set.items() + r.items())
-
     print '\n'
     print 'Transcript_ID\tError_code\tError_tag'
     for k,v in error_set.items():
         for e in v:
             print '{0:s}\t{1:s}\t[{2:s}]'.format(k, e, ERROR_INFO[e])
- 
+    ''' 

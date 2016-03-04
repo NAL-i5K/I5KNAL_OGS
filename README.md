@@ -5,6 +5,8 @@ This project is to develop python tools for generating official gene set (OGS) b
 Tools under development.
 * example_file/
     - Example files for testing
+* function4gff/
+    - General Functions for dealing with gff3
 * gff3_to_fasta/
     - Extract specific sequeces from genome sequences accroding to gff file.
 * inter_model/
