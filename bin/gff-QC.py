@@ -86,8 +86,8 @@ if __name__ == '__main__':
         report_fh = open(fname, 'wb')
 
 
-    ERROR_CODE = ['Esf0001', 'Ema0005', 'Emn0001'] 
-    ERROR_TAG = ['pseudogene or not?', 'unusual child features in the type of pseudogene found', 'Duplicate transcripts found']
+    ERROR_CODE = ['Esf0001', 'Esf0002', 'Ema0005', 'Emn0001'] 
+    ERROR_TAG = ['pseudogene or not?', 'Negative/Zero start/end coordinate', 'unusual child features in the type of pseudogene found', 'Duplicate transcripts found']
     ERROR_INFO = dict(zip(ERROR_CODE, ERROR_TAG))
 
     logger_stderr.info('Reading gff files: (%s)...\n', args.gff)
@@ -100,43 +100,3 @@ if __name__ == '__main__':
     error_set.extend(inter_model.main(gff3, logger=logger_stderr))
     error_set.extend(single_feature.main(gff3, logger=logger_stderr))
 
-    
-
-    '''
-    roots = [line for line in gff3.lines if line['line_type']=='feature' and not line['attributes'].has_key('Parent')]
-    error_set=dict()
-
-    logger_stderr.info('Checking whether pseudogene has weird child types: (%s)...', 'intra_model.pseudo_child_type()')
-    trans_list = list()
-    for root in roots:
-        r = intra_model.pseudo_child_type(gff3, root)
-        if not r == None:
-            error_set = dict(error_set.items() + r.items())
-
-        children = root['children']
-        for child in children:
-            trans_list.append(child)
-
-    logger_stderr.info('Checking duplicate transcripts: (%s)...', 'inter_model.check_duplicate()')
-    r = inter_model.check_duplicate(gff3, trans_list)
-    if not r == None: 
-        error_set = dict(error_set.items() + r.items())
-
-    # Find out models with Note mentioned about pseudogene
-    logger_stderr.info('Checking models with Note mentioned about pseudogene: (%s)...', 'single_feature.detect_pseudogene()')
-    single_feature.FIX_PSEUDOGENE(gff3)
-    for root in roots:
-        r = single_feature.detect_pseudogene(gff3, root)
-        if not r == None:
-            error_set = dict(error_set.items() + r.items())
-        children = root['children']
-        for child in children:
-            r = single_feature.detect_pseudogene(gff3, child)
-            if not r == None:
-                error_set = dict(error_set.items() + r.items())
-    print '\n'
-    print 'Transcript_ID\tError_code\tError_tag'
-    for k,v in error_set.items():
-        for e in v:
-            print '{0:s}\t{1:s}\t[{2:s}]'.format(k, e, ERROR_INFO[e])
-    ''' 
