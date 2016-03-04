@@ -6,7 +6,7 @@ Tools under development.
 * example_file/
     - Example files for testing
 * function4gff/
-    - General Functions for dealing with gff3
+    - Functions for dealing with gff3
 * gff3_to_fasta/
     - Extract specific sequeces from genome sequences accroding to gff file.
 * inter_model/

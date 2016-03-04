@@ -77,7 +77,7 @@ def check_duplicate(gff, linelist):
                         same_target=False
                         break
         if same_target:
-            key = '{0:s},{1:s}'.format(pair['source']['attributes']['ID'], pair['target']['attributes']['ID'])
+            key = [pair['source']['attributes']['ID'], pair['target']['attributes']['ID']]
             result['ID'] = key
             result['eCode'] = eCode
             result['eLines'] = [pair['source'], pair['target']]

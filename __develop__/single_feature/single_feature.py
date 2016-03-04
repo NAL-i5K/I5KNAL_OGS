@@ -67,7 +67,7 @@ def detect_pseudogene(gff, line):
         if re.search(r"[Pp][Ss][EUeu][EUeu][Dd][Oo][Gg][Ee][Nn]*", str(v)):
             flag += 1
     if flag and not re.search(r"pseudogen*", line['type']):
-        result['ID'] = line['attributes']['ID']
+        result['ID'] = [line['attributes']['ID']]
         result['eCode'] = eCode
         result['eLines'] = [line]
         line['line_errors'].append(eCode)
@@ -78,7 +78,7 @@ def detect_negative_zero_coordinate(gff, line):
     eCode = 'Esf0002'
     result=dict()
     if line['start'] <= 0 or line['end'] <= 0:
-        result['ID'] = line['attributes']['ID']
+        result['ID'] = [line['attributes']['ID']]
         result['eCode'] = eCode
         result['eLines'] = [line]
         line['line_errors'].append(eCode)

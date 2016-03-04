@@ -54,7 +54,7 @@ def pseudo_child_type(gff, rootline):
                 if len(result):
                     result['eLines'].append(child)
                 else:
-                    result['ID'] = rootline['attributes']['ID']
+                    result['ID'] = [rootline['attributes']['ID']]
                     result['eCode'] = eCode
                     result['eLines'] = [child]
         if flag != 0:
