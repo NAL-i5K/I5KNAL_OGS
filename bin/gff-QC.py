@@ -86,7 +86,7 @@ if __name__ == '__main__':
         report_fh = open(fname, 'wb')
 
 
-    ERROR_CODE = ['Esf0001', 'Esf0002', 'Ema0005', 'Emn0001'] 
+    ERROR_CODE = ['Esf0001', 'Esf0002', 'Ema0005', 'Emr0001'] 
     ERROR_TAG = ['pseudogene or not?', 'Negative/Zero start/end coordinate', 'unusual child features in the type of pseudogene found', 'Duplicate transcripts found']
     ERROR_INFO = dict(zip(ERROR_CODE, ERROR_TAG))
 

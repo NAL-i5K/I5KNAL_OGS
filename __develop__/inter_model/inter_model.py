@@ -92,7 +92,7 @@ def check_duplicate(gff, linelist):
 def main(gff, logger=None):
     function4gff.FIX_MISSING_ATTR(gff, logger=logger)
 
-    ERROR_CODE = ['Emn0001']
+    ERROR_CODE = ['Emr0001']
     ERROR_TAG = ['Duplicate transcripts found']
     ERROR_INFO = dict(zip(ERROR_CODE, ERROR_TAG))
 

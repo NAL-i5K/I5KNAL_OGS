@@ -25,7 +25,7 @@ General script for running through different phases of the OGS pipeline.
         + Esf0001: pseudogene or not?
         + Esf0002: Negative/Zero start/end coordinate
         + Ema0005: unusual child features in the type of pseudogene found
-        + Emn0001: Duplicate transcripts found
+        + Emr0001: Duplicate transcripts found
 
 ## lib/
 Completed tools would be shown as under a specific directory. Tools under development would be shown as a Symbolic link.
