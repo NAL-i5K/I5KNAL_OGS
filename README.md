@@ -21,14 +21,7 @@ Tools under development.
 ## bin/
 General script for running through different phases of the OGS pipeline.
 * gff-QC.py
-    - Detection of GFF format errors (~50 typs of errors. Details can be found in [wiki page](https://github.com/NAL-i5K/I5KNAL_OGS/wiki/Which-kind-of-errors-in-GFF3-format-can-be-detected-by-the-gff-QC-program%3F)
-        + Esf0001: pseudogene or not?
-        + Esf0002: Negative/Zero start/end coordinate
-        + Ema0003: This feature is not contained within the feature boundaries of parent
-        + Ema0006: Wrong phase
-        + Emr0001: Duplicate transcripts found
-        + Emr0005: Duplicate ID
-        + ... Please see the details in the [wiki](https://github.com/NAL-i5K/I5KNAL_OGS/wiki/Which-kind-of-errors-in-GFF3-format-can-be-detected-by-the-gff-QC-program%3F)
+    - Detection of GFF format errors (~50 typs of errors. Details can be found in [wiki page](https://github.com/NAL-i5K/I5KNAL_OGS/wiki/Which-kind-of-errors-in-GFF3-format-can-be-detected-by-the-gff-QC-program%3F))
 
 ## lib/
 Completed tools would be shown as under a specific directory. Tools under development would be shown as a Symbolic link.
