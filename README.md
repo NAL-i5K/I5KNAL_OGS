@@ -26,9 +26,12 @@ General script for running through different phases of the OGS pipeline.
         + Esf0002: Negative/Zero start/end coordinate
         + Esf0018: Start is not less than or equal to end
         + Esf0031: Empty attribute value
+        + Ema0003: This feature is not contained within the feature boundaries of parent
         + Ema0005: unusual child features in the type of pseudogene found
+        + Ema0006: Wrong phase
         + Emr0001: Duplicate transcripts found
         + Emr0005: Duplicate ID
+        + ... Please see the details in the wiki
 
 ## lib/
 Completed tools would be shown as under a specific directory. Tools under development would be shown as a Symbolic link.

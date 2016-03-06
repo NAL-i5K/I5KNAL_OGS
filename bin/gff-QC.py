@@ -91,7 +91,11 @@ if __name__ == '__main__':
     ERROR_INFO = dict(zip(ERROR_CODE, ERROR_TAG))
 
     logger_stderr.info('Reading gff files: (%s)...\n', args.gff)
-    gff3 = Gff3(gff_file=args.gff, logger=logger_null)
+    gff3 = Gff3(gff_file=args.gff, fasta_external=args.fasta, logger=logger_null)
+    gff3.check_unresolved_parents()
+    gff3.check_parent_boundary()
+    gff3.check_phase()
+    gff3.check_reference()
     logger_stderr.info('Checking missing attributes: (%s)...\n', 'single_feature.FIX_MISSING_ATTR()')
 
     print 'Transcript_ID\tError_code\tError_tag'
