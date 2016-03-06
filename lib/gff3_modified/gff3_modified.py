@@ -241,7 +241,7 @@ class Gff3(object):
             strand_set = list(set([line['strand'] for line in cds_list]))
             if len(strand_set) != 1:
                 for line in cds_list:
-                    self.add_line_error(line, {'message': 'Inconsistent CDS strand with parent: {0:s}'.format(k), 'error_type': 'STRAND', 'eCode': 'Ema0005'})
+                    self.add_line_error(line, {'message': 'Inconsistent CDS strand with parent: {0:s}'.format(k), 'error_type': 'STRAND', 'eCode': 'Ema0007'})
                 continue
             if len(cds_list) == 1:
                 if cds_list[0]['phase'] != 0:

@@ -21,13 +21,10 @@ Tools under development.
 ## bin/
 General script for running through different phases of the OGS pipeline.
 * gff-QC.py
-    - Detection of GFF format errors (Error_code: Error_tag)
+    - Detection of GFF format errors (. Details can be found in [wiki page:https://github.com/NAL-i5K/I5KNAL_OGS/wiki/Which-kind-of-errors-in-GFF3-format-can-be-detected-by-the-gff-QC-program%3F]
         + Esf0001: pseudogene or not?
         + Esf0002: Negative/Zero start/end coordinate
-        + Esf0018: Start is not less than or equal to end
-        + Esf0031: Empty attribute value
         + Ema0003: This feature is not contained within the feature boundaries of parent
-        + Ema0005: unusual child features in the type of pseudogene found
         + Ema0006: Wrong phase
         + Emr0001: Duplicate transcripts found
         + Emr0005: Duplicate ID
