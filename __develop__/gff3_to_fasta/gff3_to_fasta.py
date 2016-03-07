@@ -68,7 +68,7 @@ def extract_start_end(gff, stype, dline):
                 defline = '>{0:s}:{1:d}..{2:d}:{3:s}|gene|ID={4:s}|Name={5:s}'.format(root['seqid'], root['start'], root['end'], root['strand'], rid, rname)
             seq[defline] = get_subseq(gff, root)
     elif stype == 'exon':
-        exons = [line for line in gff.lines if line['type'] == 'exon']
+        exons = [line for line in gff.lines if line['type'] == 'exon' or if line['type'] == 'pseudogenic_exon']
         for exon in exons:
             eid = 'NA'
             if exon['attributes'].has_key('ID'):
