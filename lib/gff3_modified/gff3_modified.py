@@ -700,7 +700,7 @@ class Gff3(object):
                             if tag in line_data['attributes']:
                                 self.add_line_error(line_data, {'message': 'Found multiple attribute tags: "%s"' % tag, 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0032'})
                             if tag in multi_value_attributes: # set(['replace', 'Parent', 'Alias', 'Note', 'Dbxref', 'Ontology_term']) # add 'replace on 05182015' by Mei-Ju May Chen
-                                if value.find(', ') >= 0:
+                                if value.find(', ') >= 0 or value.find(' ,') >= 0:
                                     self.add_line_error(line_data, {'message': 'Found ", " in %s attribute, possible unescaped ",": "%s"' % (tag, value), 'error_type': 'FORMAT', 'location': '', 'eCode': 'Esf0033'}, log_level=logging.WARNING)
                                 # In addition to Parent, the Alias, Note, Dbxref and Ontology_term attributes can have multiple values.
                                 if tag in line_data['attributes']: # if this tag has been seen before
