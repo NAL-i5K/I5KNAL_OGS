@@ -1,6 +1,6 @@
 #! /usr/local/bin/python2.7
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016  Mei-Ju May Chen <arbula [at] gmail [dot] com>
+# Contributed by Mei-Ju May Chen <arbula [at] gmail [dot] com> (2016)
 
 """
 QC functions for processing multiple features within a model (intra-model) in GFF3 file.

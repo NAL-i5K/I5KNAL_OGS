@@ -1,7 +1,7 @@
 #! /usr/local/bin/python2.7
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014  Han Lin <hotdogee [at] gmail [dot] com>
-# Contributed by Mei-Ju may Chen <arbula [at] gmail [dot] com>
+# Contributed by Han Lin <hotdogee [at] gmail [dot] com> (2014)
+# Contributed by Mei-Ju May Chen <arbula [at] gmail [dot] com> (2015)
 
 """
 Check a GFF3 file for errors and unwanted features, with an option to correct the errors and output a valid GFF3 file.

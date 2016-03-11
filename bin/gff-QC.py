@@ -1,5 +1,5 @@
 #! /usr/local/bin/python2.7
-# Copyright (C) 2015  Mei-Ju Chen <arbula [at] gmail [dot] com>
+# Contributed by Mei-Ju May Chen <arbula [at] gmail [dot] com> (2015)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
