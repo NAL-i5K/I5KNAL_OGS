@@ -24,7 +24,7 @@ Tools under development.
 ## bin/
 General script for running through different phases of the OGS pipeline.
 * gff-QC.py
-    - Detection of GFF format errors (~50 types of errors. Details can be found in [wiki page](https://github.com/NAL-i5K/I5KNAL_OGS/wiki/Which-kind-of-errors-in-GFF3-format-can-be-detected-by-the-gff-QC-program%3F))
+    - Detection of GFF format errors (~50 types of errors. Details can be found in [wiki page](https://github.com/NAL-i5K/I5KNAL_OGS/wiki))
 
 ## lib/
 Completed tools would be shown as under a specific directory. Tools under development would be shown as a Symbolic link.
