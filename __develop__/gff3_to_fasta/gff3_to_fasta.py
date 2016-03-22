@@ -38,7 +38,7 @@ def extract_start_end(gff, stype, dline):
     '''Extract seqeuces for a feature only use the Start and End information. The relationship between parent and children would be ignored.'''
     seq=dict()
     roots = [line for line in gff.lines if line['line_type'] == 'feature' and not line['attributes'].has_key('Parent')]
-    if stype == 'pm':
+    if stype == 'premature_transcript':
         for root in roots:
             rid = 'NA'
             if root['attributes'].has_key('ID'):
@@ -55,7 +55,7 @@ def extract_start_end(gff, stype, dline):
                 if dline == 'complete':
                     defline = '>{0:s}:{1:d}..{2:d}:{3:s}|premature_transcript({4:s})|Parent={5:s}|ID={6:s}|Name={7:s}'.format(child['seqid'], child['start'], child['end'], child['strand'], child['type'], rid, cid, cname)
                 seq[defline] = get_subseq(gff, child)
-    elif stype == 'g':
+    elif stype == 'gene':
         for root in roots:
             rid = 'NA'
             if root['attributes'].has_key('ID'):
@@ -67,7 +67,7 @@ def extract_start_end(gff, stype, dline):
             if dline == 'complete':
                 defline = '>{0:s}:{1:d}..{2:d}:{3:s}|gene|ID={4:s}|Name={5:s}'.format(root['seqid'], root['start'], root['end'], root['strand'], rid, rname)
             seq[defline] = get_subseq(gff, root)
-    elif stype == 'e':
+    elif stype == 'exon':
         exons = [line for line in gff.lines if line['type'] == 'exon' or line['type'] == 'pseudogenic_exon']
         for exon in exons:
             eid = 'NA'
@@ -97,6 +97,10 @@ def main(gff_file=None, fasta_file=None, stype=None, dline=None):
     if not gff_file or not fasta_file or not stype:
         print('All of Gff file, fasta file, and type of extracted seuqences need to be specified')
         return
+    type_set=['gene','exon','promature_transcript']
+    if not stype in type_set:
+        logger_stderr.error('Your sequence type is "{0:s}". Sequence type must be one of {1:s}!'.format(stype, str(type_set)))
+        return
     logger_stderr.info('Reading files: {0:s}, {1:s}...'.format(gff_file, fasta_file))
     gff = Gff3(gff_file=gff_file, fasta_external=fasta_file, logger=logger_null)
 
@@ -112,7 +116,7 @@ def main(gff_file=None, fasta_file=None, stype=None, dline=None):
     
 
     seq=dict()
-    if stype == 'pm' or stype == 'g' or stype == 'e':
+    if stype == 'premature_transcript' or stype == 'gene' or stype == 'exon':
         seq = extract_start_end(gff, stype, dline)        
     if len(seq):
         logger_stderr.info('Print out extracted sequences: {0:s}_{1:s}.fa...'.format(args.output_prefix, args.sequence_type))
@@ -145,7 +149,7 @@ if __name__ == '__main__':
     """))
     parser.add_argument('-g', '--gff', type=str, help='Summary Report from Monica (default: STDIN)') 
     parser.add_argument('-f', '--fasta', type=str, help='File of typical errors (default: STDIN)')
-    parser.add_argument('-st', '--sequence_type', type=str, help='Type of seuqences: please select from "g" - gene sequence for each record; "e" - exon sequence for each record; "pm" - premature transcripts; "m" - mature transcripts (only exons included); "cds"- coding sequences; "pep" - peptide seuqences.(default: STDIN)')
+    parser.add_argument('-st', '--sequence_type', type=str, help='Type of seuqences: please select from "gene" - gene sequence for each record; "exon" - exon sequence for each record; "premature_trnascript" - premature transcripts; "transcript" - mature transcripts (only exons included); "cds"- coding sequences; "peptide" - peptide seuqences.(default: STDIN)')
     parser.add_argument('-d', '--defline', type=str, help='"simple": only ID would be shown in the defline; "complete": complete information of the feature would be shown in the defline.')
     parser.add_argument('-o', '--output_prefix', type=str, help='Prefix of output file name (default: STDIN)')
     parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
