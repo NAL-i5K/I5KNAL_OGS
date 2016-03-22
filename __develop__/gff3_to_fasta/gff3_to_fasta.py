@@ -29,7 +29,7 @@ def complement(seq):
     return seq.translate(COMPLEMENT_TRANS)
 
 def get_subseq(gff, line):
-    string = gff.fasta_external[line['seqid']]['seq'][(line['start']-1):(line['end'])-1]
+    string = gff.fasta_external[line['seqid']]['seq'][(line['start']-1):line['end']]
     if line['strand'] == '-':
         string = complement(string[::-1])
     return string
@@ -55,7 +55,7 @@ def extract_start_end(gff, stype, dline):
                 if dline == 'complete':
                     defline = '>{0:s}:{1:d}..{2:d}:{3:s}|premature_transcript({4:s})|Parent={5:s}|ID={6:s}|Name={7:s}'.format(child['seqid'], child['start'], child['end'], child['strand'], child['type'], rid, cid, cname)
                 seq[defline] = get_subseq(gff, child)
-    elif stype == 'gene':
+    elif stype == 'g':
         for root in roots:
             rid = 'NA'
             if root['attributes'].has_key('ID'):
@@ -67,7 +67,7 @@ def extract_start_end(gff, stype, dline):
             if dline == 'complete':
                 defline = '>{0:s}:{1:d}..{2:d}:{3:s}|gene|ID={4:s}|Name={5:s}'.format(root['seqid'], root['start'], root['end'], root['strand'], rid, rname)
             seq[defline] = get_subseq(gff, root)
-    elif stype == 'exon':
+    elif stype == 'e':
         exons = [line for line in gff.lines if line['type'] == 'exon' or line['type'] == 'pseudogenic_exon']
         for exon in exons:
             eid = 'NA'
@@ -112,7 +112,7 @@ def main(gff_file=None, fasta_file=None, stype=None, dline=None):
     
 
     seq=dict()
-    if stype == 'pm' or stype == 'gene' or stype == 'exon':
+    if stype == 'pm' or stype == 'g' or stype == 'e':
         seq = extract_start_end(gff, stype, dline)        
     if len(seq):
         logger_stderr.info('Print out extracted sequences: {0:s}_{1:s}.fa...'.format(args.output_prefix, args.sequence_type))
