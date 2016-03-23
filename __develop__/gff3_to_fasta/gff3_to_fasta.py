@@ -34,6 +34,78 @@ def get_subseq(gff, line):
         string = complement(string[::-1])
     return string
 
+# Features of the translation funtion of this program,
+# 1. translation from 64 combitions of codons
+# 2. translation from codons with IUB Depiction
+# 3. translation from mRNA (U contained) or CDS (T, instead of U contained)
+BASES = ['T', 'C', 'A', 'G']
+CODONS = [a+b+c for a in BASES for b in BASES for c in BASES]
+CODONS.extend(['GCN', 'TGY', 'GAY', 'GAR', 'TTY', 'GGN', 'CAY', 'ATH', 'AAR', 'TTR', 'CTN', 'YTR', 'AAY', 'CCN', 'CAR', 'CGN', 'AGR', 'MGR', 'TCN', 'AGY', 'ACN', 'GTN', 'NNN', 'TAY', 'TAR', 'TRA']) # IUB Depiction
+AMINO_ACIDS = 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGGACDEFGHIKLLLNPQRRRSSTVXY**'
+CODON_TABLE = dict(zip(CODONS, AMINO_ACIDS))
+def translater(seq):
+    seq = seq.upper().replace('\n', '').replace(' ', '').replace('U', 'T')
+    peptide = ''
+    for i in xrange(0, len(seq), 3):
+        codon = seq[i: i+3]
+        amino_acid = CODON_TABLE.get(codon, '!')
+        if amino_acid != '!': # end of seq
+            peptide += amino_acid
+    return peptide
+
+def splicer(gff, dline):
+    seq=dict()
+    roots = [line for line in gff.lines if line['line_type'] == 'feature' and not line['attributes'].has_key('Parent')]
+    for root in roots:
+        rid = 'NA'
+        if root['attributes'].has_key('ID'):
+           rid = root['attributes']['ID']
+       
+        children = root['children']
+        for child in children:
+            cid = 'NA'
+            if child['attributes'].has_key('ID'):
+                cid = child['attributes']['ID']
+            cname = cid
+            if child['attributes'].has_key('Name'):
+                cname = child['attributes']['Name']
+            defline='>{0:s}'.format(cid)
+            if dline == 'complete':
+                defline = '>{0:s}:{1:d}..{2:d}:{3:s}|{4:s}|Parent={5:s}|ID={6:s}|Name={7:s}'.format(child['seqid'], child['start'], child['end'], child['strand'], child['type'], rid, cid, cname)
+
+            segments = []
+            gchildren = child['children']
+            for gchild in gchildren:
+                if gchild['type'] == 'exon' or gchild['type'] == 'pseudogenic_exon':
+                    segments.append(gchild)
+            
+            flag = 0
+            if len(segments)==0:
+                flag += 1
+                for gchild in gchildren:
+                    if gchild['type'] == 'CDS':
+                        segments.append(gchild)
+
+            if len(segments)==0:
+                flag += 1
+                print("WARNING  There is no exon, nor CDS feature for {0:s} in the input gff. {0:s} is not transcribed.".format(cid))
+                continue
+            
+            if flag == 1:
+                print("WARNING  There is no exon feature for {0:s} in the input gff. CDS features are used for splicing instead.".format(cid))
+            
+            sort_seg = function4gff.featureSort(segments)
+            if gchild['strand'] == '-':
+                sort_seg = function4gff.featureSort(segments, reverse=True)
+
+            tmpseq = ''
+            for s in sort_seg:
+                tmpseq = tmpseq + get_subseq(gff, s)
+            
+            seq[defline] = tmpseq
+
+    return seq
+            
 def extract_start_end(gff, stype, dline):
     '''Extract seqeuces for a feature only use the Start and End information. The relationship between parent and children would be ignored.'''
     seq=dict()
@@ -97,7 +169,7 @@ def main(gff_file=None, fasta_file=None, stype=None, dline=None):
     if not gff_file or not fasta_file or not stype:
         print('All of Gff file, fasta file, and type of extracted seuqences need to be specified')
         return
-    type_set=['gene','exon','pre_trans']
+    type_set=['gene','exon','pre_trans', 'trans']
     if not stype in type_set:
         logger_stderr.error('Your sequence type is "{0:s}". Sequence type must be one of {1:s}!'.format(stype, str(type_set)))
         return
@@ -118,6 +190,8 @@ def main(gff_file=None, fasta_file=None, stype=None, dline=None):
     seq=dict()
     if stype == 'pre_trans' or stype == 'gene' or stype == 'exon':
         seq = extract_start_end(gff, stype, dline)        
+    elif stype == 'trans':
+        seq = splicer(gff, dline)
     if len(seq):
         logger_stderr.info('Print out extracted sequences: {0:s}_{1:s}.fa...'.format(args.output_prefix, args.sequence_type))
         for k,v in seq.items():

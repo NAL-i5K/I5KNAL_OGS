@@ -57,6 +57,7 @@ def FIX_MISSING_ATTR(gff, logger=None):
 
 def featureSort(linelist, reverse=False):
     ''' Used by replace_OGS.py'''
+    ''' Used by gff3_to_fasta.py'''
     FEATURECODE = {
         'gene': 0, 
         'pseudogene': 0, 
