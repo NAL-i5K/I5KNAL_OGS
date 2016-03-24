@@ -10,7 +10,7 @@ The software is used to extract biological sequences (such as spliced transcript
     - `exon`: exon sequence for each record in the fasta output
     - `pre_trans`: premature transcript (exon and intron regions included) for each record in the fasta output
     - `trans`: spliced transcript (only exons included) for each record in the fasta output
-    - `cds`: coding sequence (utr regions are excluded as comparing to `trans`, the spliced transcripts) for each record in the fasta output
+    - `cds`: coding sequence (utr exons and introns excluded) for each record in the fasta output
     - `pep`: translated peptide sequences (translation based on cds regions) for each record in the fasta output
 * **Python method for universal translation**: The `translator` method is feasible for 
     - translation from 64 combitions of codons
