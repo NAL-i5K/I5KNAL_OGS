@@ -53,10 +53,12 @@ def translator(seq):
             peptide += amino_acid
     return peptide
 
-def splicer(gff, dline):
+def splicer(gff, ftype, dline):
     seq=dict()
     roots = [line for line in gff.lines if line['line_type'] == 'feature' and not line['attributes'].has_key('Parent')]
     for root in roots:
+        if ftype[0] == 'CDS' and root['type'] == 'pseudogene': # pseudogene should not contain cds
+            continue
         rid = 'NA'
         if root['attributes'].has_key('ID'):
            rid = root['attributes']['ID']
@@ -71,12 +73,12 @@ def splicer(gff, dline):
                 cname = child['attributes']['Name']
             defline='>{0:s}'.format(cid)
             if dline == 'complete':
-                defline = '>{0:s}:{1:d}..{2:d}:{3:s}|{4:s}|Parent={5:s}|ID={6:s}|Name={7:s}'.format(child['seqid'], child['start'], child['end'], child['strand'], child['type'], rid, cid, cname)
+                defline = '>{0:s}:{1:d}..{2:d}:{3:s}|{4:s}({8:s})|Parent={5:s}|ID={6:s}|Name={7:s}'.format(child['seqid'], child['start'], child['end'], child['strand'], child['type'], rid, cid, cname, ftype[0])
 
             segments = []
             gchildren = child['children']
             for gchild in gchildren:
-                if gchild['type'] == 'exon' or gchild['type'] == 'pseudogenic_exon':
+                if gchild['type'] in ftype:
                     segments.append(gchild)
             
             flag = 0
@@ -137,7 +139,7 @@ def extract_start_end(gff, stype, dline):
                 rname = root['attributes']['ID']
             defline='>{0:s}'.format(rid)
             if dline == 'complete':
-                defline = '>{0:s}:{1:d}..{2:d}:{3:s}|gene|ID={4:s}|Name={5:s}'.format(root['seqid'], root['start'], root['end'], root['strand'], rid, rname)
+                defline = '>{0:s}:{1:d}..{2:d}:{3:s}|{6:s}|ID={4:s}|Name={5:s}'.format(root['seqid'], root['start'], root['end'], root['strand'], rid, rname, root['type'])
             seq[defline] = get_subseq(gff, root)
     elif stype == 'exon':
         exons = [line for line in gff.lines if line['type'] == 'exon' or line['type'] == 'pseudogenic_exon']
@@ -159,7 +161,7 @@ def extract_start_end(gff, stype, dline):
             
             defline='>{0:s}'.format(eid)
             if dline == 'complete':
-                defline = '>{0:s}:{1:d}..{2:d}:{3:s}|exon|Parent={5:s}|ID={6:s}|Name={7:s}'.format(exon['seqid'], exon['start'], exon['end'], exon['strand'], exon['type'], pid, eid, ename)
+                defline = '>{0:s}:{1:d}..{2:d}:{3:s}|{4:s}|Parent={5:s}|ID={6:s}|Name={7:s}'.format(exon['seqid'], exon['start'], exon['end'], exon['strand'], exon['type'], pid, eid, ename)
 
             seq[defline] = get_subseq(gff, exon)
 
@@ -169,7 +171,7 @@ def main(gff_file=None, fasta_file=None, stype=None, dline=None):
     if not gff_file or not fasta_file or not stype:
         print('All of Gff file, fasta file, and type of extracted seuqences need to be specified')
         return
-    type_set=['gene','exon','pre_trans', 'trans']
+    type_set=['gene','exon','pre_trans', 'trans', 'cds', 'pep']
     if not stype in type_set:
         logger_stderr.error('Your sequence type is "{0:s}". Sequence type must be one of {1:s}!'.format(stype, str(type_set)))
         return
@@ -191,7 +193,19 @@ def main(gff_file=None, fasta_file=None, stype=None, dline=None):
     if stype == 'pre_trans' or stype == 'gene' or stype == 'exon':
         seq = extract_start_end(gff, stype, dline)        
     elif stype == 'trans':
-        seq = splicer(gff, dline)
+        feature_type = ['exon', 'pseudogenic_exon']
+        seq = splicer(gff, feature_type,  dline)
+    elif stype == 'cds':
+        feature_type = ['CDS']
+        seq = splicer(gff, feature_type,  dline)
+    elif stype == 'pep':
+        feature_type = ['CDS']
+        tmpseq = splicer(gff, feature_type,  dline)
+        for k,v in tmpseq.items():
+            k = k.replace("|mRNA(CDS)|", "|peptide|").replace("-RA", "-PA")
+            v = translator(v)
+            seq[k] = v
+            
     if len(seq):
         logger_stderr.info('Print out extracted sequences: {0:s}_{1:s}.fa...'.format(args.output_prefix, args.sequence_type))
         for k,v in seq.items():
