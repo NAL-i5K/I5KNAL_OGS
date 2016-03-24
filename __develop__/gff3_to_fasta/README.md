@@ -1,5 +1,5 @@
 # gff3_to_fasta
-The software is to extract biological sequences, such as spliced transcripts, cds, or peptides, from specific regions of genome based on `GFF3` file.
+The software is used to extract biological sequences (such as spliced transcripts, cds, or peptides) from specific regions of genome based on `GFF3` file.
 * Free software: [license](https://github.com/NAL-i5K/I5KNAL_OGS/blob/I5KNAL_OGS/LICENCE.md)
 
 ## Features
