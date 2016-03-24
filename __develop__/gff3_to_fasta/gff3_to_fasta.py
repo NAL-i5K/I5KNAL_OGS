@@ -43,7 +43,7 @@ CODONS = [a+b+c for a in BASES for b in BASES for c in BASES]
 CODONS.extend(['GCN', 'TGY', 'GAY', 'GAR', 'TTY', 'GGN', 'CAY', 'ATH', 'AAR', 'TTR', 'CTN', 'YTR', 'AAY', 'CCN', 'CAR', 'CGN', 'AGR', 'MGR', 'TCN', 'AGY', 'ACN', 'GTN', 'NNN', 'TAY', 'TAR', 'TRA']) # IUB Depiction
 AMINO_ACIDS = 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGGACDEFGHIKLLLNPQRRRSSTVXY**'
 CODON_TABLE = dict(zip(CODONS, AMINO_ACIDS))
-def translater(seq):
+def translator(seq):
     seq = seq.upper().replace('\n', '').replace(' ', '').replace('U', 'T')
     peptide = ''
     for i in xrange(0, len(seq), 3):
@@ -223,7 +223,7 @@ if __name__ == '__main__':
     """))
     parser.add_argument('-g', '--gff', type=str, help='Summary Report from Monica (default: STDIN)') 
     parser.add_argument('-f', '--fasta', type=str, help='File of typical errors (default: STDIN)')
-    parser.add_argument('-st', '--sequence_type', type=str, help='Type of seuqences: please select from "gene" - gene sequence for each record; "exon" - exon sequence for each record; "pre_trnas" - premature transcripts; "trans" - mature transcripts (only exons included); "cds"- coding sequences; "pep" - peptide seuqences.(default: STDIN)')
+    parser.add_argument('-st', '--sequence_type', type=str, help='Type of seuqences: please select from "gene" - gene sequence for each record; "exon" - exon sequence for each record; "pre_trnas" - premature transcripts; "trans" - spliced transcripts (only exons included); "cds"- coding sequences; "pep" - peptide seuqences.(default: STDIN)')
     parser.add_argument('-d', '--defline', type=str, help='"simple": only ID would be shown in the defline; "complete": complete information of the feature would be shown in the defline.')
     parser.add_argument('-o', '--output_prefix', type=str, help='Prefix of output file name (default: STDIN)')
     parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
