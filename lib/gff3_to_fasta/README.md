@@ -35,8 +35,6 @@ If you would like to ignore QC step for checking errors in gff file, you can use
 
 If you would like to incorporte a specfic method in `gff3_to_fata` into other python script, bollow is a suggested script.
 
-.. code:: python
-
     import gff3_to_fasta
 
     seq = 'GTGGCTCGTTTGATTGAACAAATATGTACTAACCCAGTTGGATTATCTGGATCTGGATTTTTTCTGGTGACAAAGAATTTTCTACTTCAGATGGCAGGAACGATAGTTACATTTGAACTGATGCTGTTTCAATTTGCCCCAGTAAATGCACAGCAAAAACCCATGAAGTCATATGACTGTATTTAA'
@@ -45,14 +43,14 @@ If you would like to incorporte a specfic method in `gff3_to_fata` into other py
 
 
 
-.. |GFF3| replace:: ``GFF3``
-.. |dict| replace:: ``dict``
-.. |list| replace:: ``list``
-.. |FASTA| replace:: ``FASTA``
+|GFF3| replace:: ``GFF3``
+|dict| replace:: ``dict``
+|list| replace:: ``list``
+|FASTA| replace:: ``FASTA``
 
-.. _GFF3: http://www.sequenceontology.org/gff3.shtml
-.. _dict: https://docs.python.org/2/tutorial/datastructures.html#dictionaries
-.. _list: https://docs.python.org/2/tutorial/datastructures.html#more-on-lists
-.. _FASTA: http://en.wikipedia.org/wiki/FASTA_format
+_GFF3: http://www.sequenceontology.org/gff3.shtml
+_dict: https://docs.python.org/2/tutorial/datastructures.html#dictionaries
+_list: https://docs.python.org/2/tutorial/datastructures.html#more-on-lists
+_FASTA: http://en.wikipedia.org/wiki/FASTA_format
 
 
