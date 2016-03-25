@@ -57,8 +57,8 @@ def splicer(gff, ftype, dline):
     seq=dict()
     roots = [line for line in gff.lines if line['line_type'] == 'feature' and not line['attributes'].has_key('Parent')]
     for root in roots:
-        if ftype[0] == 'CDS' and root['type'] == 'pseudogene': # pseudogene should not contain cds
-            continue
+        #if ftype[0] == 'CDS' and root['type'] == 'pseudogene': # pseudogene should not contain cds
+            #continue
         rid = 'NA'
         if root['attributes'].has_key('ID'):
            rid = root['attributes']['ID']
@@ -88,9 +88,13 @@ def splicer(gff, ftype, dline):
                     if gchild['type'] == 'CDS':
                         segments.append(gchild)
 
-            if len(segments)==0:
+            if len(segments)==0 and ftype[0] == 'CDS':
                 flag += 1
-                print("WARNING  There is no exon, nor CDS feature for {0:s} in the input gff. {0:s} is not transcribed.".format(cid))
+                print("WARNING  There is no CDS feature for {0:s} in the input gff. The sequence of {0:s} is not generated.".format(cid))
+                continue
+            elif len(segments)==0:
+                flag += 1
+                print("WARNING  There is no exon, nor CDS feature for {0:s} in the input gff. The sequence of {0:s} is not generated.".format(cid))
                 continue
             
             if flag == 1:
@@ -168,7 +172,7 @@ def extract_start_end(gff, stype, dline):
 
     return seq
     
-def main(gff_file=None, fasta_file=None, stype=None, dline=None):
+def main(gff_file=None, fasta_file=None, stype=None, dline=None, qc=True):
     if not gff_file or not fasta_file or not stype:
         print('All of Gff file, fasta file, and type of extracted seuqences need to be specified')
         return
@@ -179,19 +183,33 @@ def main(gff_file=None, fasta_file=None, stype=None, dline=None):
     logger_stderr.info('Reading files: {0:s}, {1:s}...'.format(gff_file, fasta_file))
     gff = Gff3(gff_file=gff_file, fasta_external=fasta_file, logger=logger_null)
 
-    logger_stderr.info('Checking errors...')
-    logger_stderr.warning('The extracted sequences might be wrong for the following features which have formatting errors...')
-    gff.check_parent_boundary()
-    gff.check_phase()
-    gff.check_reference()
-    error_set = function4gff.extract_internal_detected_errors(gff)
-    error_set.extend(intra_model.main(gff, logger=logger_stderr))
-    error_set.extend(single_feature.main(gff, logger=logger_stderr))
-    print('ID\tError_Code\tError_Tag')
-    for e in error_set:
-        tag = '[{0:s}]'.format(e['eTag'])
-        print(e['ID'], e['eCode'], tag)
+    if qc:
+        logger_stderr.info('Checking errors...')
+        gff.check_parent_boundary()
+        gff.check_phase()
+        gff.check_reference()
+        error_set = function4gff.extract_internal_detected_errors(gff)
+        t = intra_model.main(gff, logger=logger_stderr)
+        if t:
+            error_set.extend(t)
+        t = single_feature.main(gff, logger=logger_stderr)
+        if t:
+            error_set.extend(t)
+
+        if len(error_set):
+            escaped_error = ['Esf0012','Esf0033']
+            eSet = list()
+            for e in error_set:
+                if not e['eCode'] in escaped_error:
+                    eSet.append(e)
+            if len(eSet):
+                logger_stderr.warning('The extracted sequences might be wrong for the following features which have formatting errors...')
+                print('ID\tError_Code\tError_Tag')
+                for e in eSet:
+                    tag = '[{0:s}]'.format(e['eTag'])
+                    print e['ID'], e['eCode'], tag
     
+    logger_stderr.info('Extract seqeunces for {0:s}...'.format(stype))
     seq=dict()
     if stype == 'pre_trans' or stype == 'gene' or stype == 'exon':
         seq = extract_start_end(gff, stype, dline)        
@@ -243,6 +261,7 @@ if __name__ == '__main__':
     parser.add_argument('-st', '--sequence_type', type=str, help='Type of seuqences: please select from "gene" - gene sequence for each record; "exon" - exon sequence for each record; "pre_trans" - genomic region of a transcript model (premature transcript); "trans" - spliced transcripts (only exons included); "cds"- coding sequences; "pep" - peptide seuqences.(default: STDIN)')
     parser.add_argument('-d', '--defline', type=str, help='"simple": only ID would be shown in the defline; "complete": complete information of the feature would be shown in the defline.')
     parser.add_argument('-o', '--output_prefix', type=str, help='Prefix of output file name (default: STDIN)')
+    parser.add_argument('-noQC', '--quality_control', action='store_false', help='Do not excute quality control for gff file. (default: True)')
     parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
     
     args = parser.parse_args()
@@ -291,4 +310,4 @@ if __name__ == '__main__':
         parser.print_help()
         sys.exit(1)
 
-    main(args.gff, args.fasta, args.sequence_type, args.defline)
+    main(args.gff, args.fasta, args.sequence_type, args.defline, args.quality_control)

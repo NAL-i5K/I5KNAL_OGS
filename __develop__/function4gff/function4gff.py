@@ -47,11 +47,11 @@ def FIX_MISSING_ATTR(gff, logger=None):
                 logger.error('[Missing ID] A model needs to have a unique ID, but not. Please fix it first.\n{0:s}'.format(f['line_raw']))
                 flag += 1
             else:
-                if len(f['parents'])== 1 and len(f['parents'][0]) == 1:
+                if len(f['parents'])== 1:
                     tid = f['parents'][0][0]['attributes']['ID'] + '-' + f['type']
                     f['attributes']['ID'] = tid
                 else:
-                    logger.error('[Missing ID] The program try to automatically generate ID for this model, but failed becuase this model has multiple parent features.\n{0:s}'.format(f['line_raw']))
+                    logger.warning('[Missing ID] The program try to automatically generate ID for this model, but failed becuase this model has multiple parent features.\n{0:s}'.format(f['line_raw']))
     if flag != 0:
         sys.exit()
 
