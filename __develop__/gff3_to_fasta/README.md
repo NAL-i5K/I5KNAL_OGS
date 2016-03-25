@@ -12,7 +12,7 @@ The software is used to extract biological sequences (such as spliced transcript
     - `trans`: Spliced transcript (only exons included) for each record in the fasta output. Exon features are mainly used for splicing. CDS features are used instead if exon features are absent. If both of cds and exon features are absent, the transcript is not generated and a `WARNING` message is showed with the transcript ID.
     - `cds`: Coding sequence (utr exons and introns excluded) for each record in the fasta output. CDS features need to be included in the gff file.
     - `pep`: Translated peptide sequences (translation based on cds regions) for each record in the fasta output. CDS features need to be included in the gff file.
-* **Python method for universal translation**: The `translator` method is feasible for 
+* **`translator` method for universal translation**: The `translator` method is feasible for 
     - translation from 64 combitions of codons
     - translation from codons with IUB Depiction
     - translation from mRNA (U contained) or CDS (T, instead of U contained)
