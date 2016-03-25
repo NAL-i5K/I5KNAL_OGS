@@ -35,12 +35,13 @@ If you would like to ignore QC step for checking errors in gff file, you can use
 
 If you would like to incorporte a specfic method in `gff3_to_fata` into other python script, bollow is a suggested script.
 
+```python
     import gff3_to_fasta
 
     seq = 'GTGGCTCGTTTGATTGAACAAATATGTACTAACCCAGTTGGATTATCTGGATCTGGATTTTTTCTGGTGACAAAGAATTTTCTACTTCAGATGGCAGGAACGATAGTTACATTTGAACTGATGCTGTTTCAATTTGCCCCAGTAAATGCACAGCAAAAACCCATGAAGTCATATGACTGTATTTAA'
 
     gff3_to_fasta.translator(seq)
-
+```
 
 
 |GFF3| replace:: ``GFF3``
