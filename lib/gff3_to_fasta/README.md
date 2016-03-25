@@ -16,3 +16,24 @@ The software is used to extract biological sequences (such as spliced transcript
     - translation from 64 combitions of codons
     - translation from codons with IUB Depiction
     - translation from mRNA (U contained) or CDS (T, instead of U contained)
+
+## Quick start
+Sequences extraction based on genome annotation file in GFF3 format might generate incorrect sequences if the GFF3 file contain certain errors. This program can automatically validate GFF3 format and list the detected errors for users along with the extracted seuqences by simple command as follows.
+
+`python gff3_to_fasta.py -g sample_input/annotations3.gff -f sample_input/sample.fa -st cds -d simple -o sample_output`
+
+If you would like to ignore QC step for checking errors in gff file, you can use the bellow command.
+
+`python gff3_to_fasta.py -g sample_input/annotations3.gff -f sample_input/sample.fa -st cds -d simple -o sample_output -noQC`
+
+If you would like to incorporte a specfic method in `gff3_to_fata` into other python script, bollow is a suggested script.
+
+`
+import gff3_to_fasta
+
+seq = 'GTGGCTCGTTTGATTGAACAAATATGTACTAACCCAGTTGGATTATCTGGATCTGGATTTTTTCTGGTGACAAAGAATTTTCTACTTCAGATGGCAGGAACGATAGTTACATTTGAACTGATGCTGTTTCAATTTGCCCCAGTAAATGCACAGCAAAAACCCATGAAGTCATATGACTGTATTTAA'
+
+gff3_to_fasta.translator(seq)
+`
+
+
