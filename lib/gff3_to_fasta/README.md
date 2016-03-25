@@ -40,8 +40,36 @@ If you would like to incorporte a specfic method in `gff3_to_fata` into other py
 
     seq = 'GTGGCTCGTTTGATTGAACAAATATGTACTAACCCAGTTGGATTATCTGGATCTGGATTTTTTCTGGTGACAAAGAATTTTCTACTTCAGATGGCAGGAACGATAGTTACATTTGAACTGATGCTGTTTCAATTTGCCCCAGTAAATGCACAGCAAAAACCCATGAAGTCATATGACTGTATTTAA'
 
-    gff3_to_fasta.translator(seq)
+    pep = gff3_to_fasta.translator(seq)
+    print 'Input: {0:s}'.format(seq)
+    print 'Translation: {0:s}'.format(pep)
 ```
+
+
+Options
+-------
+
+```
+usage: gff3_to_fasta.py [-h] [-g GFF] [-f FASTA] [-st SEQUENCE_TYPE]
+                        [-d DEFLINE] [-o OUTPUT_PREFIX] [-noQC] [-v]
+```
+
+* `-h` (--help): Show help message and exit
+* `-g` (GFF, --gff GFF): Genome annotation file in GFF3 format
+* `-f` (FASTA, --fasta): Genome sequence file in FASTA format
+* `-st` (SEQUENCE_TYPE, --sequence_type): Type of seuqences you would like to extract. It must be one of the below options.
+    - gene - gene sequence for each record
+    - exon - exon sequence for each record
+    - pre_trans - genomic region of a transcript model (premature transcript)
+    - trans - spliced transcripts (only exons included)
+    - cds - coding sequences
+    - pep - peptide seuqences
+* `-d` (DEFLINE, --defline): Specify defline format. It must be one of below options.
+    - simple - only ID would be shown in the defline; eg. `>LDEC008409-PA`
+    - complete - complete information of the feature would be shown in the defline; eg. `>Scaffold194:420160..444997:-|peptide|Parent=LDEC008409|ID=LDEC008409-PA|Name=LDEC008409-PA`
+* `-o` (OUTPUT_PREFIX, --output_prefix): Prefix of output file name
+* `-noQC` (--quality_control): Specify this option if you do not want to excute quality control for gff file, otherwise QC will be excudted while running the program. (default: QC is excuted)
+* `-v` (--version): Show program's version number and exit
 
 
 [`GFF3`]: http://www.sequenceontology.org/gff3.shtml
