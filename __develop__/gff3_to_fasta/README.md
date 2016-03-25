@@ -8,7 +8,7 @@ The software is used to extract biological sequences (such as spliced transcript
 * **Easy extraction for biological sequences**: Provide options for extracting six types of biological seuqences.
     - **`gene`**: Gene sequence for each record in the fasta output. Gene or pseudogene features need to be included in the gff file
     - **`exon`**: Exon sequence for each record in the fasta output. Exon features need to be included in the gff file
-    - **`g_seq`**: Genomic sequence (exon and intron regions included) for each record in the fasta output. Transcript-level features (such as mRNA, rRNA, pseudogenic transcripts) need to be inlcuded in the gff file.
+    - **`pre_trans`**: Genomic region of a transcript model, namely premature transcript (exon and intron regions included), for each record in the fasta output. Transcript-level features (such as mRNA, rRNA, pseudogenic transcripts) need to be inlcuded in the gff file.
     - **`trans`**: Spliced transcript (only exons included) for each record in the fasta output. Exon features are mainly used for splicing. CDS features are used instead if exon features are absent. If both of cds and exon features are absent, the transcript is not generated and a `WARNING` message is showed with the transcript ID.
     - **`cds`**: Coding sequence (utr exons and introns excluded) for each record in the fasta output. CDS features need to be included in the gff file.
     - **`pep`**: Translated peptide sequences (translation based on cds regions) for each record in the fasta output. CDS features need to be included in the gff file.

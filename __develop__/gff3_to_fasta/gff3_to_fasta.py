@@ -112,7 +112,7 @@ def extract_start_end(gff, stype, dline):
     '''Extract seqeuces for a feature only use the Start and End information. The relationship between parent and children would be ignored.'''
     seq=dict()
     roots = [line for line in gff.lines if line['line_type'] == 'feature' and not line['attributes'].has_key('Parent')]
-    if stype == 'g_seq':
+    if stype == 'pre_trans':
         for root in roots:
             rid = 'NA'
             if root['attributes'].has_key('ID'):
@@ -172,7 +172,7 @@ def main(gff_file=None, fasta_file=None, stype=None, dline=None):
     if not gff_file or not fasta_file or not stype:
         print('All of Gff file, fasta file, and type of extracted seuqences need to be specified')
         return
-    type_set=['gene','exon','g_seq', 'trans', 'cds', 'pep']
+    type_set=['gene','exon','pre_trans', 'trans', 'cds', 'pep']
     if not stype in type_set:
         logger_stderr.error('Your sequence type is "{0:s}". Sequence type must be one of {1:s}!'.format(stype, str(type_set)))
         return
@@ -193,7 +193,7 @@ def main(gff_file=None, fasta_file=None, stype=None, dline=None):
         print(e['ID'], e['eCode'], tag)
     
     seq=dict()
-    if stype == 'g_seq' or stype == 'gene' or stype == 'exon':
+    if stype == 'pre_trans' or stype == 'gene' or stype == 'exon':
         seq = extract_start_end(gff, stype, dline)        
     elif stype == 'trans':
         feature_type = ['exon', 'pseudogenic_exon']
@@ -240,7 +240,7 @@ if __name__ == '__main__':
     """))
     parser.add_argument('-g', '--gff', type=str, help='Summary Report from Monica (default: STDIN)') 
     parser.add_argument('-f', '--fasta', type=str, help='File of typical errors (default: STDIN)')
-    parser.add_argument('-st', '--sequence_type', type=str, help='Type of seuqences: please select from "gene" - gene sequence for each record; "exon" - exon sequence for each record; "g_seq" - genomic sequences; "trans" - spliced transcripts (only exons included); "cds"- coding sequences; "pep" - peptide seuqences.(default: STDIN)')
+    parser.add_argument('-st', '--sequence_type', type=str, help='Type of seuqences: please select from "gene" - gene sequence for each record; "exon" - exon sequence for each record; "pre_trans" - genomic region of a transcript model (premature transcript); "trans" - spliced transcripts (only exons included); "cds"- coding sequences; "pep" - peptide seuqences.(default: STDIN)')
     parser.add_argument('-d', '--defline', type=str, help='"simple": only ID would be shown in the defline; "complete": complete information of the feature would be shown in the defline.')
     parser.add_argument('-o', '--output_prefix', type=str, help='Prefix of output file name (default: STDIN)')
     parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
