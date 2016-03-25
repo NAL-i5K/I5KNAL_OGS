@@ -8,7 +8,7 @@ The software is used to extract biological sequences (such as spliced transcript
 * **Easy extraction for biological sequences**: Provide options for extracting six types of biological seuqences.
     - `gene`: gene sequence for each record in the fasta output
     - `exon`: exon sequence for each record in the fasta output
-    - `pre_trans`: premature transcript (exon and intron regions included) for each record in the fasta output
+    - `g_seq`: genomic sequence (exon and intron regions included) for each record in the fasta output
     - `trans`: spliced transcript (only exons included) for each record in the fasta output
     - `cds`: coding sequence (utr exons and introns excluded) for each record in the fasta output
     - `pep`: translated peptide sequences (translation based on cds regions) for each record in the fasta output
