@@ -9,8 +9,6 @@ Tools under development.
     - Example files for testing
 * function4gff/
     - Functions for dealing with gff3
-* gff3_to_fasta/
-    - Extract specific sequeces from genome sequences accroding to gff file.
 * inter_model/
     - QC functions for processing multiple features between models (inter-model) in GFF3 file.
 * intra_model/
@@ -29,3 +27,5 @@ General script for running through different phases of the OGS pipeline.
 Completed tools would be shown as under a specific directory. Tools under development would be shown as a Symbolic link.
 * gff3_modified/
     - Basic data structure used for nesting the information of genome annotations in GFF3 format.
+* gff3_to_fasta/
+    - Extract specific sequeces from genome sequences accroding to gff file.
