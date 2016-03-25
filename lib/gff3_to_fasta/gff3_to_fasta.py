@@ -256,12 +256,12 @@ if __name__ == '__main__':
     1. Extract sequences from specific regions of genome based on gff file.
 
     """))
-    parser.add_argument('-g', '--gff', type=str, help='Summary Report from Monica (default: STDIN)') 
-    parser.add_argument('-f', '--fasta', type=str, help='File of typical errors (default: STDIN)')
-    parser.add_argument('-st', '--sequence_type', type=str, help='Type of seuqences: please select from "gene" - gene sequence for each record; "exon" - exon sequence for each record; "pre_trans" - genomic region of a transcript model (premature transcript); "trans" - spliced transcripts (only exons included); "cds"- coding sequences; "pep" - peptide seuqences.(default: STDIN)')
-    parser.add_argument('-d', '--defline', type=str, help='"simple": only ID would be shown in the defline; "complete": complete information of the feature would be shown in the defline.')
+    parser.add_argument('-g', '--gff', type=str, help='Genome annotation file in GFF3 format (default: STDIN)') 
+    parser.add_argument('-f', '--fasta', type=str, help='Genome sequences in FASTA format (default: STDIN)')
+    parser.add_argument('-st', '--sequence_type', type=str, help='Type of seuqences you would like to extract: please select from "gene" - gene sequence for each record; "exon" - exon sequence for each record; "pre_trans" - genomic region of a transcript model (premature transcript); "trans" - spliced transcripts (only exons included); "cds" - coding sequences; "pep" - peptide seuqences.(default: STDIN)')
+    parser.add_argument('-d', '--defline', type=str, help='Specify defline format:"simple" - only ID would be shown in the defline; "complete" - complete information of the feature would be shown in the defline.')
     parser.add_argument('-o', '--output_prefix', type=str, help='Prefix of output file name (default: STDIN)')
-    parser.add_argument('-noQC', '--quality_control', action='store_false', help='Do not excute quality control for gff file. (default: True)')
+    parser.add_argument('-noQC', '--quality_control', action='store_false', help='Specify this option if you do not want to excute quality control for gff file. (default: QC is excuted)')
     parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
     
     args = parser.parse_args()
