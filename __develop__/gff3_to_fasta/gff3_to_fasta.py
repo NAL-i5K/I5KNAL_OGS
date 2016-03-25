@@ -131,16 +131,17 @@ def extract_start_end(gff, stype, dline):
                 seq[defline] = get_subseq(gff, child)
     elif stype == 'gene':
         for root in roots:
-            rid = 'NA'
-            if root['attributes'].has_key('ID'):
-                rid = root['attributes']['ID']
-            rname = rid
-            if root['attributes'].has_key('Name'):
-                rname = root['attributes']['ID']
-            defline='>{0:s}'.format(rid)
-            if dline == 'complete':
-                defline = '>{0:s}:{1:d}..{2:d}:{3:s}|{6:s}|ID={4:s}|Name={5:s}'.format(root['seqid'], root['start'], root['end'], root['strand'], rid, rname, root['type'])
-            seq[defline] = get_subseq(gff, root)
+            if root['type'] == 'gene' or root['type'] == 'pseudogene':
+                rid = 'NA'
+                if root['attributes'].has_key('ID'):
+                    rid = root['attributes']['ID']
+                rname = rid
+                if root['attributes'].has_key('Name'):
+                    rname = root['attributes']['ID']
+                defline='>{0:s}'.format(rid)
+                if dline == 'complete':
+                    defline = '>{0:s}:{1:d}..{2:d}:{3:s}|{6:s}|ID={4:s}|Name={5:s}'.format(root['seqid'], root['start'], root['end'], root['strand'], rid, rname, root['type'])
+                seq[defline] = get_subseq(gff, root)
     elif stype == 'exon':
         exons = [line for line in gff.lines if line['type'] == 'exon' or line['type'] == 'pseudogenic_exon']
         for exon in exons:
@@ -183,12 +184,14 @@ def main(gff_file=None, fasta_file=None, stype=None, dline=None):
     gff.check_parent_boundary()
     gff.check_phase()
     gff.check_reference()
-    print('ID\tError_Code\tError_Tag')
-    single_feature.main(gff)
-    intra_model.main(gff)
     error_set = function4gff.extract_internal_detected_errors(gff)
+    error_set.extend(intra_model.main(gff, logger=logger_stderr))
+    error_set.extend(single_feature.main(gff, logger=logger_stderr))
+    print('ID\tError_Code\tError_Tag')
+    for e in error_set:
+        tag = '[{0:s}]'.format(e['eTag'])
+        print(e['ID'], e['eCode'], tag)
     
-
     seq=dict()
     if stype == 'g_seq' or stype == 'gene' or stype == 'exon':
         seq = extract_start_end(gff, stype, dline)        

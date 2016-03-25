@@ -113,7 +113,7 @@ def extract_internal_detected_errors(gff):
             result['eCode'] = e['eCode']
             result['eLines'] = [line]
             result['eTag'] = e['message']
-            print('{0:s}\t{1:s}\t[{2:s}]'.format(result['ID'], result['eCode'], result['eTag']))
+            #print('{0:s}\t{1:s}\t[{2:s}]'.format(result['ID'], result['eCode'], result['eTag']))
             eSet.append(result)
 
     if len(eSet):

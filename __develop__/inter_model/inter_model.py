@@ -36,6 +36,10 @@ import function4gff
 
 __version__ = '0.0.1'
 
+ERROR_CODE = []
+ERROR_TAG = []
+ERROR_INFO = dict(zip(ERROR_CODE, ERROR_TAG))
+
 
 def check_duplicate(gff, linelist):
     '''
@@ -81,6 +85,7 @@ def check_duplicate(gff, linelist):
             result['ID'] = key
             result['eCode'] = eCode
             result['eLines'] = [pair['source'], pair['target']]
+            result['eTag'] = 'Duplicate transcripts found between {0:s} and {1:s}'.format(pair['source']['attributes']['ID'], pair['target']['attributes']['ID'])
             eSet.append(result)       
             gff.add_line_error(pair['source'], {'message': 'Duplicate transcripts found between {0:s} and {1:s}'.format(pair['source']['attributes']['ID'], pair['target']['attributes']['ID']), 'error_type': 'INTER_MODEL', 'eCode': eCode})
             gff.add_line_error(pair['target'], {'message': 'Duplicate transcripts found between {0:s} and {1:s}'.format(pair['source']['attributes']['ID'], pair['target']['attributes']['ID']), 'error_type': 'INTER_MODEL', 'eCode': eCode})
@@ -92,9 +97,6 @@ def check_duplicate(gff, linelist):
 def main(gff, logger=None):
     function4gff.FIX_MISSING_ATTR(gff, logger=logger)
 
-    ERROR_CODE = ['Emr0001']
-    ERROR_TAG = ['Duplicate transcripts found']
-    ERROR_INFO = dict(zip(ERROR_CODE, ERROR_TAG))
 
     roots = [line for line in gff.lines if line['line_type']=='feature' and not line['attributes'].has_key('Parent')]
     error_set=list()
@@ -108,10 +110,12 @@ def main(gff, logger=None):
     if not r == None:
         error_set.extend(r)
 
+    '''
     for e in error_set:
         tag = '[{0:s}]'.format(ERROR_INFO[e['eCode']]) 
         print(e['ID'], e['eCode'], tag)
-   
+    '''
+
     if len(error_set): 
         return(error_set)
 

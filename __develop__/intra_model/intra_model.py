@@ -36,6 +36,10 @@ import function4gff
 
 __version__ = '0.0.1'
 
+ERROR_CODE = ['Ema0005']
+ERROR_TAG = ['unusual child features in the type of pseudogene found']
+ERROR_INFO = dict(zip(ERROR_CODE, ERROR_TAG))
+
 def check_pseudo_child_type(gff, rootline):
     eCode = 'Ema0005'
     result = dict()
@@ -54,17 +58,15 @@ def check_pseudo_child_type(gff, rootline):
                     result['ID'] = [rootline['attributes']['ID']]
                     result['eCode'] = eCode
                     result['eLines'] = [child]
+                    result['eTag'] = ERROR_INFO[eCode]
         if flag != 0:
-            gff.add_line_error(rootline, {'message': 'unusual child features in the type of pseudogene found', 'error_type': 'FEATURE_TYPE', 'eCode': eCode})
+            gff.add_line_error(rootline, {'message': ERROR_INFO[eCode], 'error_type': 'FEATURE_TYPE', 'eCode': eCode})
     if len(result):
         return [result]
 
 def main(gff, logger=None):
     function4gff.FIX_MISSING_ATTR(gff, logger=logger)
 
-    ERROR_CODE = ['Ema0005']
-    ERROR_TAG = ['unusual child features in the type of pseudogene found']
-    ERROR_INFO = dict(zip(ERROR_CODE, ERROR_TAG))
 
     roots = [line for line in gff.lines if line['line_type']=='feature' and not line['attributes'].has_key('Parent')]
     error_set=list()
@@ -72,11 +74,11 @@ def main(gff, logger=None):
         r = check_pseudo_child_type(gff, root)
         if not r == None:
             error_set.extend(r)
-
+    '''
     for e in error_set:
         tag = '[{0:s}]'.format(ERROR_INFO[e['eCode']]) 
         print(e['ID'], e['eCode'], tag)
-   
+    '''
     if len(error_set): 
         return(error_set)
 

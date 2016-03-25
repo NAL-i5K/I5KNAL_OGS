@@ -36,7 +36,9 @@ import function4gff
 
 __version__ = '0.0.1'
 
-
+ERROR_CODE = ['Esf0001', 'Esf0002']
+ERROR_TAG = ['pseudogene or not?', 'Negative/Zero start/end coordinate']
+ERROR_INFO = dict(zip(ERROR_CODE, ERROR_TAG))
 
 def FIX_PSEUDOGENE(gff):
     roots = [line for line in gff.lines if line['line_type']=='feature' and not line['attributes'].has_key('Parent')]
@@ -70,7 +72,8 @@ def check_pseudogene(gff, line):
         result['ID'] = [line['attributes']['ID']]
         result['eCode'] = eCode
         result['eLines'] = [line]
-        gff.add_line_error(line, {'message': 'pseudogene or not?', 'error_type': 'FEATURE_TYPE', 'eCode': eCode})
+        result['eTag'] = ERROR_INFO[eCode]
+        gff.add_line_error(line, {'message': ERROR_INFO[eCode], 'error_type': 'FEATURE_TYPE', 'eCode': eCode})
     if len(result):
         return [result]
 
@@ -81,7 +84,8 @@ def check_negative_zero_coordinate(gff, line):
         result['ID'] = [line['attributes']['ID']]
         result['eCode'] = eCode
         result['eLines'] = [line]
-        gff.add_line_error(line, {'message': 'Negative/Zero start/end coordinate', 'error_type': 'FORMAT', 'eCode': eCode})
+        result['eTag'] = ERROR_INFO[eCode]
+        gff.add_line_error(line, {'message': ERROR_INFO[eCode], 'error_type': 'FORMAT', 'eCode': eCode})
     if len(result):
         return [result]
 
@@ -89,9 +93,6 @@ def main(gff, logger=None):
     function4gff.FIX_MISSING_ATTR(gff, logger=logger)
     FIX_PSEUDOGENE(gff)
 
-    ERROR_CODE = ['Esf0001', 'Esf0002']
-    ERROR_TAG = ['pseudogene or not?', 'Negative/Zero start/end coordinate']
-    ERROR_INFO = dict(zip(ERROR_CODE, ERROR_TAG))
 
     features = [line for line in gff.lines if line['line_type']=='feature']
     error_set=list()
@@ -102,11 +103,11 @@ def main(gff, logger=None):
         r = check_negative_zero_coordinate(gff, f)
         if not r == None:
             error_set.extend(r)
-
+    '''
     for e in error_set:
         tag = '[{0:s}]'.format(ERROR_INFO[e['eCode']]) 
         print(e['ID'], e['eCode'], tag)
-   
+    '''
     if len(error_set): 
         return(error_set)
 

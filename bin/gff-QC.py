@@ -86,9 +86,9 @@ if __name__ == '__main__':
         report_fh = open(fname, 'wb')
 
 
-    ERROR_CODE = ['Esf0001', 'Esf0002', 'Ema0005', 'Emr0001'] 
-    ERROR_TAG = ['pseudogene or not?', 'Negative/Zero start/end coordinate', 'unusual child features in the type of pseudogene found', 'Duplicate transcripts found']
-    ERROR_INFO = dict(zip(ERROR_CODE, ERROR_TAG))
+    #ERROR_CODE = ['Esf0001', 'Esf0002', 'Ema0005', 'Emr0001'] 
+    #ERROR_TAG = ['pseudogene or not?', 'Negative/Zero start/end coordinate', 'unusual child features in the type of pseudogene found', 'Duplicate transcripts found']
+    #ERROR_INFO = dict(zip(ERROR_CODE, ERROR_TAG))
 
     logger_stderr.info('Reading gff files: (%s)...\n', args.gff)
     gff3 = Gff3(gff_file=args.gff, fasta_external=args.fasta, logger=logger_null)
@@ -98,10 +98,13 @@ if __name__ == '__main__':
     gff3.check_reference()
     logger_stderr.info('Checking missing attributes: (%s)...\n', 'single_feature.FIX_MISSING_ATTR()')
 
-    print 'Transcript_ID\tError_code\tError_tag'
     error_set = list()
     error_set.extend(function4gff.extract_internal_detected_errors(gff3))
     error_set.extend(intra_model.main(gff3, logger=logger_stderr))
     error_set.extend(inter_model.main(gff3, logger=logger_stderr))
     error_set.extend(single_feature.main(gff3, logger=logger_stderr))
 
+    print 'ID\tError_code\tError_tag'
+    for e in error_set:
+        tag = '[{0:s}]'.format(e['eTag'])
+        print e['ID'], e['eCode'], tag
