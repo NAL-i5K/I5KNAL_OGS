@@ -25,7 +25,7 @@ General script for running through different phases of the OGS pipeline.
 
 ## lib/
 Completed tools would be shown as under a specific directory. Tools under development would be shown as a Symbolic link.
-* gff3_modified/
+* [gff3_modified](https://github.com/NAL-i5K/I5KNAL_OGS/tree/I5KNAL_OGS/lib/gff3_modified)/
     - Basic data structure used for nesting the information of genome annotations in GFF3 format.
-* gff3_to_fasta/
+* [gff3_to_fasta](https://github.com/NAL-i5K/I5KNAL_OGS/tree/I5KNAL_OGS/lib/gff3_to_fasta)/
     - Extract specific sequeces from genome sequences accroding to gff file.
