@@ -18,8 +18,8 @@ Features
     - **`cds`**: Coding sequence (utr exons and introns excluded) for each record in the [`FASTA`] output. CDS features need to be included in the gff file.
     - **`pep`**: Translated peptide sequences (translation based on cds regions) for each record in the [`FASTA`] output. CDS features need to be included in the gff file.
 * **`translator` method for universal translation**: The `translator` method is feasible for 
-    - translation from 64 combitions of codons
-    - translation from codons with IUB Depiction
+    - translation from 64 combitions of [standard codons](http://www-bimas.cit.nih.gov/molbio/translate/codes.html) (Only standard codons and universal stop condons are considered.)
+    - translation from [codons with IUB Depiction](http://www-bimas.cit.nih.gov/molbio/translate/codes.html)
     - translation from mRNA (U contained) or CDS (T, instead of U contained)
 
 Quick Start
