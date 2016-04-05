@@ -172,7 +172,25 @@ def extract_start_end(gff, stype, dline):
 
     return seq
     
-def main(gff_file=None, fasta_file=None, stype=None, dline=None, qc=True):
+def main(gff_file=None, fasta_file=None, stype=None, dline=None, qc=True, output_prefix=None, logger=None):
+    if logger == None:
+        logger = logging.getLogger(__name__+'stderr')
+        logger.setLevel(logging.INFO)
+        stderr_handler = logging.StreamHandler()
+        stderr_handler.setFormatter(logging.Formatter('%(levelname)-8s %(message)s'))
+        logger.addHandler(stderr_handler)
+        logger_null = logging.getLogger(__name__+'null')
+        null_handler = logging.NullHandler()
+        logger_null.addHandler(null_handler)
+
+    if output_prefix:
+        logger.info('Specifying prefix of output file name: (%s)...', output_prefix)
+        fname = '{0:s}_{1:s}.fa'.format(output_prefix, stype)
+        report_fh = open(fname, 'wb')
+    else:
+        parser.print_help()
+        sys.exit(1)
+
     if not gff_file or not fasta_file or not stype:
         print('All of Gff file, fasta file, and type of extracted seuqences need to be specified')
         return
@@ -180,11 +198,11 @@ def main(gff_file=None, fasta_file=None, stype=None, dline=None, qc=True):
     if not stype in type_set:
         logger_stderr.error('Your sequence type is "{0:s}". Sequence type must be one of {1:s}!'.format(stype, str(type_set)))
         return
-    logger_stderr.info('Reading files: {0:s}, {1:s}...'.format(gff_file, fasta_file))
-    gff = Gff3(gff_file=gff_file, fasta_external=fasta_file, logger=logger_null)
+    logger.info('Reading files: {0:s}, {1:s}...'.format(gff_file, fasta_file))
+    gff = Gff3(gff_file=gff_file, fasta_external=fasta_file, logger=logger)
 
     if qc:
-        logger_stderr.info('Checking errors...')
+        logger.info('Checking errors...')
         gff.check_parent_boundary()
         gff.check_phase()
         gff.check_reference()
@@ -203,13 +221,13 @@ def main(gff_file=None, fasta_file=None, stype=None, dline=None, qc=True):
                 if not e['eCode'] in escaped_error:
                     eSet.append(e)
             if len(eSet):
-                logger_stderr.warning('The extracted sequences might be wrong for the following features which have formatting errors...')
+                logger.warning('The extracted sequences might be wrong for the following features which have formatting errors...')
                 print('ID\tError_Code\tError_Tag')
                 for e in eSet:
                     tag = '[{0:s}]'.format(e['eTag'])
                     print e['ID'], e['eCode'], tag
     
-    logger_stderr.info('Extract seqeunces for {0:s}...'.format(stype))
+    logger.info('Extract seqeunces for {0:s}...'.format(stype))
     seq=dict()
     if stype == 'pre_trans' or stype == 'gene' or stype == 'exon':
         seq = extract_start_end(gff, stype, dline)        
@@ -228,7 +246,7 @@ def main(gff_file=None, fasta_file=None, stype=None, dline=None, qc=True):
             seq[k] = v
             
     if len(seq):
-        logger_stderr.info('Print out extracted sequences: {0:s}_{1:s}.fa...'.format(args.output_prefix, args.sequence_type))
+        logger.info('Print out extracted sequences: {0:s}_{1:s}.fa...'.format(output_prefix, stype))
         for k,v in seq.items():
             report_fh.write('{0:s}\n{1:s}\n'.format(k,v))
 
@@ -302,12 +320,5 @@ if __name__ == '__main__':
         parser.print_help()
         sys.exit(1)
 
-    if args.output_prefix:
-        logger_stderr.info('Specifying prefix of output file name: (%s)...', args.output_prefix)
-        fname = '{0:s}_{1:s}.fa'.format(args.output_prefix, args.sequence_type)
-        report_fh = open(fname, 'wb')
-    else:
-        parser.print_help()
-        sys.exit(1)
 
-    main(args.gff, args.fasta, args.sequence_type, args.defline, args.quality_control)
+    main(args.gff, args.fasta, args.sequence_type, args.defline, args.quality_control, args.output_prefix, logger_stderr)
