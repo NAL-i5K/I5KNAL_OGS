@@ -72,6 +72,8 @@ def splicer(gff, ftype, dline):
             if child['attributes'].has_key('Name'):
                 cname = child['attributes']['Name']
             defline='>{0:s}'.format(cid)
+            if ftype[0] == 'CDS':
+                defline='>{0:s}-CDS'.format(cid)
             if dline == 'complete':
                 defline = '>{0:s}:{1:d}..{2:d}:{3:s}|{4:s}({8:s})|Parent={5:s}|ID={6:s}|Name={7:s}'.format(child['seqid'], child['start'], child['end'], child['strand'], child['type'], rid, cid, cname, ftype[0])
 
@@ -196,7 +198,7 @@ def main(gff_file=None, fasta_file=None, stype=None, dline=None, qc=True, output
         return
     type_set=['gene','exon','pre_trans', 'trans', 'cds', 'pep']
     if not stype in type_set:
-        logger_stderr.error('Your sequence type is "{0:s}". Sequence type must be one of {1:s}!'.format(stype, str(type_set)))
+        logger.error('Your sequence type is "{0:s}". Sequence type must be one of {1:s}!'.format(stype, str(type_set)))
         return
     logger.info('Reading files: {0:s}, {1:s}...'.format(gff_file, fasta_file))
     gff = Gff3(gff_file=gff_file, fasta_external=fasta_file, logger=logger)
@@ -207,10 +209,10 @@ def main(gff_file=None, fasta_file=None, stype=None, dline=None, qc=True, output
         gff.check_phase()
         gff.check_reference()
         error_set = function4gff.extract_internal_detected_errors(gff)
-        t = intra_model.main(gff, logger=logger_stderr)
+        t = intra_model.main(gff, logger=logger)
         if t:
             error_set.extend(t)
-        t = single_feature.main(gff, logger=logger_stderr)
+        t = single_feature.main(gff, logger=logger)
         if t:
             error_set.extend(t)
 
